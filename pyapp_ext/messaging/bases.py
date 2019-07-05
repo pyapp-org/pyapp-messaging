@@ -1,8 +1,7 @@
 import abc
 
-from typing import Sequence, Callable, Awaitable
-
 from pyapp.events import AsyncEvent, Event
+from typing import Sequence, Callable, Awaitable
 
 __all__ = ("MessageQueue", "PubSubQueue", "AsyncMessageQueue", "AsyncPubSubQueue")
 

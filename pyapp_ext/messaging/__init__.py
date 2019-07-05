@@ -15,10 +15,10 @@ class Extension:
 
     @staticmethod
     def ready():
-        from . import factory
         from pyapp.injection import register_factory
+        from . import factory
 
         register_factory(MessageQueue, factory.message_queue_factory.create)
-        register_factory(PubSubQueue, factory.pubsub_queue_factory.create)
+        register_factory(PubSubQueue, factory.pub_sub_queue_factory.create)
         register_factory(AsyncMessageQueue, factory.async_message_queue_factory.create)
-        register_factory(AsyncPubSubQueue, factory.async_pubsub_queue_factory.create)
+        register_factory(AsyncPubSubQueue, factory.async_pub_sub_queue_factory.create)

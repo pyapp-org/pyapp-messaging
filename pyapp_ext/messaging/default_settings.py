@@ -1,11 +1,11 @@
-TASK_QUEUES = {}
+MESSAGE_QUEUES = {}
 """
-Task queue definitions
+Message queue definitions
 
 Example settings::
 
-    TASK_QUEUES = {
-        "jobs": ("pyapp_ext.aiomq.aws.SQS", {
+    MESSAGE_QUEUES = {
+        "jobs": ("pyapp_ext.aiomq.aws.MessageQueue", {
             "aws_credentials": "default",
             "url": "http://..."
         })
@@ -13,14 +13,14 @@ Example settings::
 
 """
 
-PUBSUB_QUEUES = {}
+PUB_SUB_QUEUES = {}
 """
-Task queue definitions
+Pub/Sub queue definitions
 
 Example settings::
 
-    PUBSUB_QUEUES = {
-        "jobs": ("pyapp_ext.aiomq.aws.SNS", {
+    PUB_SUB_QUEUES = {
+        "jobs": ("pyapp_ext.aiomq.aws.PubSubQueue", {
             "aws_credentials": "default",
             "url": "http://..."
         })

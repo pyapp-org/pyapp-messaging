@@ -4,20 +4,22 @@ from .bases import MessageQueue, PubSubQueue, AsyncMessageQueue, AsyncPubSubQueu
 
 __all__ = (
     "message_queue_factory",
-    "pubsub_queue_factory",
+    "pub_sub_queue_factory",
     "async_message_queue_factory",
-    "async_pubsub_queue_factory",
+    "async_pub_sub_queue_factory",
 )
 
 
 message_queue_factory = NamedPluginFactory[MessageQueue](
     "MESSAGE_QUEUES", abc=MessageQueue
 )
-pubsub_queue_factory = NamedPluginFactory[PubSubQueue]("PUBSUB_QUEUES", abc=PubSubQueue)
+pub_sub_queue_factory = NamedPluginFactory[PubSubQueue](
+    "PUB_SUB_QUEUES", abc=PubSubQueue
+)
 
 async_message_queue_factory = NamedPluginFactory[AsyncMessageQueue](
     "MESSAGE_QUEUES", abc=AsyncMessageQueue
 )
-async_pubsub_queue_factory = NamedPluginFactory[AsyncPubSubQueue](
-    "PUBSUB_QUEUES", abc=AsyncPubSubQueue
+async_pub_sub_queue_factory = NamedPluginFactory[AsyncPubSubQueue](
+    "PUB_SUB_QUEUES", abc=AsyncPubSubQueue
 )
