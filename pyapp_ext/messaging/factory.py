@@ -3,10 +3,14 @@ from pyapp.conf.helpers import NamedPluginFactory
 from .bases import MessageQueue, PubSubQueue, AsyncMessageQueue, AsyncPubSubQueue
 
 __all__ = (
-    "message_queue_factory", "get_message_queue",
-    "async_message_queue_factory", "async_get_message_queue",
-    "pub_sub_queue_factory", "get_pub_sub_queue",
-    "async_pub_sub_queue_factory", "async_get_pub_sub_queue",
+    "message_queue_factory",
+    "get_message_queue",
+    "async_message_queue_factory",
+    "async_get_message_queue",
+    "pub_sub_queue_factory",
+    "get_pub_sub_queue",
+    "async_pub_sub_queue_factory",
+    "async_get_pub_sub_queue",
 )
 
 message_queue_factory = NamedPluginFactory[MessageQueue](
