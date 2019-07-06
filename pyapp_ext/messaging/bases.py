@@ -1,7 +1,7 @@
 import abc
 
 from pyapp.events import AsyncEvent, Event
-from typing import Sequence, Callable, Awaitable
+from typing import Sequence, Callable, Awaitable, Dict
 
 __all__ = ("MessageQueue", "PubSubQueue", "AsyncMessageQueue", "AsyncPubSubQueue")
 
@@ -44,7 +44,7 @@ class MessageQueue(QueueBase, metaclass=abc.ABCMeta):
     new_message = Event[Callable[[str], None]]()
 
     @abc.abstractmethod
-    def send(self, message: str):
+    def send(self, kwargs: Dict[str, str]):
         """
         Send a message to the task queue
         """
@@ -75,7 +75,7 @@ class PubSubQueue(QueueBase, metaclass=abc.ABCMeta):
     """
 
     @abc.abstractmethod
-    def publish(self, message: str, topic: str):
+    def publish(self, kwargs: Dict[str, str], topic: str):
         """
         Publish a message to queue
         """
@@ -98,8 +98,9 @@ class AsyncQueueBase(abc.ABC):
     Base class of Async Message queues
     """
 
-    async def __aenter__(self) -> None:
+    async def __aenter__(self):
         await self.open()
+        return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.close()
@@ -131,7 +132,7 @@ class AsyncMessageQueue(AsyncQueueBase, metaclass=abc.ABCMeta):
     new_message = AsyncEvent[Callable[[str], Awaitable]]()
 
     @abc.abstractmethod
-    async def send(self, message: str):
+    async def send(self, kwargs: Dict[str, str]):
         """
         Send a message to the task queue
         """
@@ -162,7 +163,7 @@ class AsyncPubSubQueue(AsyncQueueBase, metaclass=abc.ABCMeta):
     """
 
     @abc.abstractmethod
-    async def publish(self, message: str, topic: str):
+    async def publish(self, kwargs: Dict[str, str]):
         """
         Publish a message to queue
         """
