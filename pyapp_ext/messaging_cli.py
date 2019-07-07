@@ -23,13 +23,25 @@ class Extension:
         @argument("--body", type=FileType("r"))
         @inject
         def send(opts: CommandOptions, *, loop: AbstractEventLoop):
-            from .messaging.factory import async_get_message_queue
+            from .messaging.asyncio.factory import get_sender
 
             async def _send():
-                async with async_get_message_queue(opts.NAME) as queue:
+                async with get_sender(opts.NAME) as queue:
                     await queue.send()
 
             loop.run_until_complete(_send())
+
+        @group.command(help_text="Send a message to a Message Queue")
+        @argument("NAME", help_text="Name of queue from config.")
+        @inject
+        def receiver(opts: CommandOptions, *, loop: AbstractEventLoop):
+            from .messaging.asyncio.factory import get_receiver
+
+            async def _receiver():
+                async with get_receiver(opts.NAME) as queue:
+                    await queue.listen()
+
+            loop.run_until_complete(_receiver())
 
         @group.command(help_text="Send a message to a Pub/Sub Queue")
         @argument("NAME", help_text="Name of queue from config.")
