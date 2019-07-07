@@ -1,5 +1,10 @@
-MESSAGE_QUEUES = {
-    "amqp": ("pyapp_ext.aio_pika.queues.MessageQueue", {"routing_key": "message-queue"}),
+SEND_MESSAGE_QUEUES = {
+    "amqp": ("pyapp_ext.aio_pika.queues.MessageSend", {"routing_key": "message-queue"}),
+    "sqs": ("pyapp_ext.aiomq.aws.MessageQueue", {"url": "http://"}),
+}
+
+RECEIVE_MESSAGE_QUEUES = {
+    "amqp": ("pyapp_ext.aio_pika.queues.MessageReceiver", {"queue_name": "test_receive"}),
     "sqs": ("pyapp_ext.aiomq.aws.MessageQueue", {"url": "http://"}),
 }
 
