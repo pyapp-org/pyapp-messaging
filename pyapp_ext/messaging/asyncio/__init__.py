@@ -1,5 +1,5 @@
 """
-pyApp - Messaging
+pyApp - Async Messaging
 
 """
 from .bases import *
@@ -7,11 +7,11 @@ from .bases import *
 
 class Extension:
     """
-    pyApp Messaging
+    pyApp - Async Messaging
     """
 
-    default_settings = ".default_settings"
-    checks = ".checks"
+    default_settings = "pyapp_ext.messaging.default_settings"
+    checks = "pyapp_ext.messaging.default_settings"
 
     @staticmethod
     def ready():

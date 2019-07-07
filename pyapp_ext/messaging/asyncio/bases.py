@@ -12,24 +12,24 @@ __all__ = (
 
 class QueueBase(abc.ABC):
     """
-    Base class of Message queues
+    Base class of Async Message queues
     """
 
     __slots__ = ()
 
-    def __enter__(self):
-        self.open()
+    async def __aenter__(self):
+        await self.open()
         return self
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        await self.close()
 
-    def open(self):
+    async def open(self):
         """
         Open queue
         """
 
-    def close(self):
+    async def close(self):
         """
         Close Queue
         """
@@ -51,7 +51,7 @@ class MessageSender(QueueBase, metaclass=abc.ABCMeta):
     __slots__ = ()
 
     @abc.abstractmethod
-    def send(self, kwargs: Dict[str, Any]):
+    async def send(self, kwargs: Dict[str, Any]):
         """
         Send a message to the task queue
         """
@@ -73,13 +73,7 @@ class MessageReceiver(QueueBase, metaclass=abc.ABCMeta):
     __slots__ = ()
 
     @abc.abstractmethod
-    def receive(self, count: int = 1) -> Sequence[Dict[str, Any]]:
-        """
-        Receive a message (or messages) from the task queue
-        """
-
-    @abc.abstractmethod
-    def listen(self):
+    async def listen(self):
         """
         Start listening on the queue for messages
         """
@@ -100,7 +94,7 @@ class MessagePublisher(QueueBase, metaclass=abc.ABCMeta):
     __slots__ = ()
 
     @abc.abstractmethod
-    def publish(self, kwargs: Dict[str, Any]):
+    async def publish(self, kwargs: Dict[str, Any]):
         """
         Publish a message to queue
         """
@@ -121,13 +115,13 @@ class MessageSubscriber(QueueBase, metaclass=abc.ABCMeta):
     __slots__ = ()
 
     @abc.abstractmethod
-    def subscribe(self, topic: str):
+    async def subscribe(self, topic: str):
         """
         Subscribe to a named topic
         """
 
     @abc.abstractmethod
-    def cancel_subscription(self, topic: str):
+    async def cancel_subscription(self, topic: str):
         """
         Unsubscribe from a topic
         """
