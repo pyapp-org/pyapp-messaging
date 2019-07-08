@@ -1,29 +1,60 @@
-MESSAGE_QUEUES = {}
+SEND_MESSAGE_QUEUES = {}
 """
-Message queue definitions
+Message sending queue definitions
 
 Example settings::
 
-    MESSAGE_QUEUES = {
-        "jobs": ("pyapp_ext.aiomq.aws.MessageQueue", {
-            "aws_credentials": "default",
-            "url": "http://..."
-        })
+    SEND_MESSAGE_QUEUES = {
+        "amqp": (
+            "pyapp_ext.aio_pika.queues.MessageSender",
+            {"routing_key": "message-queue"},
+        ),
+    }
+    
+"""
+
+RECEIVE_MESSAGE_QUEUES = {}
+"""
+Message receive queue definitions.
+
+Example settings::
+
+    RECEIVE_MESSAGE_QUEUES = {
+        "amqp": (
+            "pyapp_ext.aio_pika.queues.MessageReceiver",
+            {"queue_name": "message-queue"},
+        ),
+    }
+    
+"""
+
+
+PUBLISH_MESSAGE_QUEUES = {}
+"""
+Message receive queue definitions.
+
+Example settings::
+
+    PUBLISH_MESSAGE_QUEUES = {
+        "amqp": (
+            "pyapp_ext.aio_pika.queues.MessagePublisher",
+            {"exchange_name": "pubsub-queue"},
+        ),
     }
 
 """
 
-PUB_SUB_QUEUES = {}
+SUBSCRIBE_MESSAGE_QUEUES = {}
 """
-Pub/Sub queue definitions
+Message receive queue definitions.
 
 Example settings::
 
-    PUB_SUB_QUEUES = {
-        "jobs": ("pyapp_ext.aiomq.aws.PubSubQueue", {
-            "aws_credentials": "default",
-            "url": "http://..."
-        })
+    SUBSCRIBE_MESSAGE_QUEUES = {
+        "amqp": (
+            "pyapp_ext.aio_pika.queues.MessageSubscriber",
+            {"exchange_name": "pubsub-queue"},
+        ),
     }
 
 """
