@@ -27,7 +27,7 @@ def receiver(config_name: str, *, loop: AbstractEventLoop):
 def publish(data: Any, config_name: str, *, loop: AbstractEventLoop):
     async def _send():
         async with factory.get_publisher(config_name) as queue:
-            await queue.publish({"data": data})
+            await queue.publish(data=data)
 
     loop.run_until_complete(_send())
 
@@ -36,6 +36,6 @@ def publish(data: Any, config_name: str, *, loop: AbstractEventLoop):
 def subscriber(config_name: str, *, loop: AbstractEventLoop):
     async def _receiver():
         async with factory.get_subscriber(config_name) as queue:
-            await queue.subscribe()
+            await queue.listen()
 
     loop.run_until_complete(_receiver())
