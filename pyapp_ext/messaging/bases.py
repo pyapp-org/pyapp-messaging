@@ -167,7 +167,7 @@ class MessageSubscriber(QueueBase, metaclass=abc.ABCMeta):
         print(content_type, content_encoding, body)
 
     @abc.abstractmethod
-    def subscribe(self, topic: str):
+    def listen(self):
         """
         Subscribe to a named topic
         """

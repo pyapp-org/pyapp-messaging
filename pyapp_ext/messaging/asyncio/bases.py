@@ -170,7 +170,7 @@ class MessageSubscriber(QueueBase, metaclass=abc.ABCMeta):
         await asyncio.sleep(1)
 
     @abc.abstractmethod
-    async def subscribe(self, topic: str):
+    async def listen(self):
         """
         Subscribe to a named topic
         """
