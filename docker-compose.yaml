@@ -9,3 +9,9 @@ services:
     ports:
       - 5672:5672
       - 8080:15672
+
+  elasticmq:
+    image: roribio16/alpine-sqs
+    ports:
+      - 9324:9324
+      - 9325:9325
