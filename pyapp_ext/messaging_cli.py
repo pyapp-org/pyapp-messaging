@@ -2,11 +2,9 @@
 pyApp - Messaging CLI
 
 """
-from asyncio import AbstractEventLoop
 from argparse import FileType
 
 from pyapp.app import argument, CommandGroup, CommandOptions
-from pyapp.injection import inject
 
 
 class Extension:
@@ -21,30 +19,29 @@ class Extension:
         @group.command(help_text="Send a message to a Message Queue")
         @argument("NAME", help_text="Name of queue from config.")
         @argument("--body", type=FileType("r"))
-        @inject
-        def send(opts: CommandOptions, *, loop: AbstractEventLoop):
-            from .messaging.asyncio.factory import get_sender
+        def send(opts: CommandOptions):
+            from .messaging.asyncio.cli import send
 
-            async def _send():
-                async with get_sender(opts.NAME) as queue:
-                    await queue.send()
-
-            loop.run_until_complete(_send())
+            send(opts.body.read(), opts.NAME)
 
         @group.command(help_text="Send a message to a Message Queue")
         @argument("NAME", help_text="Name of queue from config.")
-        @inject
-        def receiver(opts: CommandOptions, *, loop: AbstractEventLoop):
-            from .messaging.asyncio.factory import get_receiver
+        def receiver(opts: CommandOptions):
+            from .messaging.asyncio.cli import receiver
 
-            async def _receiver():
-                async with get_receiver(opts.NAME) as queue:
-                    await queue.listen()
-
-            loop.run_until_complete(_receiver())
+            receiver(opts.NAME)
 
         @group.command(help_text="Send a message to a Pub/Sub Queue")
         @argument("NAME", help_text="Name of queue from config.")
         @argument("--body", type=FileType("r"))
         def publish(opts: CommandOptions):
-            pass
+            from .messaging.asyncio.cli import publish
+
+            publish(opts.body.read(), opts.NAME)
+
+        @group.command(help_text="Send a message to a Message Queue")
+        @argument("NAME", help_text="Name of queue from config.")
+        def subscriber(opts: CommandOptions):
+            from .messaging.asyncio.cli import subscriber
+
+            subscriber(opts.NAME)
