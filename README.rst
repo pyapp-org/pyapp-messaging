@@ -26,26 +26,22 @@ Usage
 
 This library is easiest used with the injection framework eg::
 
-    from pyapp.injection import inject_into, FactoryArgs
+    from pyapp.injection import inject, Args
     from pyapp_ext.messaging import MessageQueue
 
-    @inject_into
-    def my_function(queue: MessageQueue = FactoryArgs(name="job_queue")):
+    @inject
+    def my_function(queue: MessageQueue = Args(name="job_queue")):
         queue.send_message("Do job A")
 
 or using `asyncio`::
 
-    from pyapp.injection import inject_into, FactoryArgs
-    from pyapp_ext.messaging import AsyncMessageQueue
+    from pyapp.injection import inject, Args
+    from pyapp_ext.messaging.asyncio import MessageSender
 
-    @inject_into
-    async def my_function(queue: AsyncMessageQueue = FactoryArgs(name="job_queue")):
-        await queue.send_message("Do job A")
+    @inject
+    async def my_function(sender: MessageSender = Args(name="job_queue")):
+        await sender.send("Do job A")
 
 
 API
 ===
-
-`pyapp_ext.messaging.do_foo(name: str)`
-
-    Documentation of do foo!
