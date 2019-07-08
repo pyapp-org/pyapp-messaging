@@ -9,7 +9,7 @@ from . import factory
 def send(data: Any, config_name: str, *, loop: AbstractEventLoop):
     async def _send():
         async with factory.get_sender(config_name) as queue:
-            await queue.send({"data": data})
+            await queue.send(data=data)
 
     loop.run_until_complete(_send())
 

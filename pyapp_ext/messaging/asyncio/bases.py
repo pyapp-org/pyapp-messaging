@@ -1,8 +1,14 @@
 import abc
+import asyncio
 
-from typing import Dict, Any
+from typing import Any
+
+from ..serialisation import Serialise, JSONSerialise
 
 __all__ = ("MessageSender", "MessageReceiver", "MessagePublisher", "MessageSubscriber")
+
+
+DEFAULT_SERIALISE = JSONSerialise()
 
 
 class QueueBase(abc.ABC):
@@ -11,6 +17,8 @@ class QueueBase(abc.ABC):
     """
 
     __slots__ = ()
+
+    serialisation: Serialise = DEFAULT_SERIALISE
 
     async def __aenter__(self):
         await self.open()
@@ -46,10 +54,23 @@ class MessageSender(QueueBase, metaclass=abc.ABCMeta):
     __slots__ = ()
 
     @abc.abstractmethod
-    async def send(self, kwargs: Dict[str, Any]):
+    async def send_raw(
+        self, body: bytes, *, content_type: str = None, content_encoding: str = None
+    ):
         """
-        Send a message to the task queue
+        Send a raw message to the task queue. This accepts a prepared and encoded body.
         """
+
+    async def send(self, **kwargs: Any):
+        """
+        Send a message to the task queue.
+        """
+        serialisation = self.serialisation
+        await self.send_raw(
+            serialisation.serialise(kwargs),
+            content_type=serialisation.content_type,
+            content_encoding=serialisation.content_encoding,
+        )
 
 
 class MessageReceiver(QueueBase, metaclass=abc.ABCMeta):
@@ -66,6 +87,19 @@ class MessageReceiver(QueueBase, metaclass=abc.ABCMeta):
     """
 
     __slots__ = ()
+
+    async def receive(
+        self,
+        message_body: bytes,
+        content_type: str = None,
+        content_encoding: str = None,
+    ):
+        """
+        Called when a message is received.
+        """
+        body = self.serialisation.deserialise(message_body)
+        print(content_type, content_encoding, body)
+        await asyncio.sleep(1)
 
     @abc.abstractmethod
     async def listen(self):
@@ -89,10 +123,23 @@ class MessagePublisher(QueueBase, metaclass=abc.ABCMeta):
     __slots__ = ()
 
     @abc.abstractmethod
-    async def publish(self, kwargs: Dict[str, Any]):
+    async def publish_raw(
+        self, body: bytes, *, content_type: str = None, content_encoding: str = None
+    ):
+        """
+        Publish a raw message to queue. This accepts a prepared and encoded body.
+        """
+
+    async def publish(self, **kwargs: Any):
         """
         Publish a message to queue
         """
+        serialisation = self.serialisation
+        await self.publish_raw(
+            serialisation.serialise(kwargs),
+            content_type=serialisation.content_type,
+            content_encoding=serialisation.content_encoding,
+        )
 
 
 class MessageSubscriber(QueueBase, metaclass=abc.ABCMeta):
@@ -109,14 +156,21 @@ class MessageSubscriber(QueueBase, metaclass=abc.ABCMeta):
 
     __slots__ = ()
 
+    async def receive(
+        self,
+        message_body: bytes,
+        content_type: str = None,
+        content_encoding: str = None,
+    ):
+        """
+        Called when a message is received.
+        """
+        body = self.serialisation.deserialise(message_body)
+        print(content_type, content_encoding, body)
+        await asyncio.sleep(1)
+
     @abc.abstractmethod
     async def subscribe(self, topic: str):
         """
         Subscribe to a named topic
-        """
-
-    @abc.abstractmethod
-    async def cancel_subscription(self, topic: str):
-        """
-        Unsubscribe from a topic
         """
