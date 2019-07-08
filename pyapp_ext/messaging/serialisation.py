@@ -3,7 +3,7 @@ import gzip
 import json
 import pickle
 
-from typing import Any
+from typing import Any, Union
 
 
 class Serialise(abc.ABC):
@@ -13,13 +13,13 @@ class Serialise(abc.ABC):
     content_encoding: str = None
 
     @abc.abstractmethod
-    def serialise(self, data: Any) -> bytes:
+    def serialise(self, data: Any) -> Union[bytes, str]:
         """
         Serialise native type into bytes.
         """
 
     @abc.abstractmethod
-    def deserialise(self, data: bytes) -> Any:
+    def deserialise(self, data: Union[bytes, str]) -> Any:
         """
         Deserialise bytes into native type.
         """
@@ -55,7 +55,7 @@ class PickleSerialise(ContentType):
     def serialise(self, data: Any) -> bytes:
         return pickle.dumps(data)
 
-    def deserialise(self, data: bytes) -> Any:
+    def deserialise(self, data: Union[bytes, str]) -> Any:
         return pickle.loads(data)
 
 
@@ -66,11 +66,13 @@ class JSONSerialise(ContentType):
 
     content_type = "application/json"
 
-    def serialise(self, data: Any) -> bytes:
-        return json.dumps(data).encode()
+    def serialise(self, data: Any) -> str:
+        return json.dumps(data)
 
-    def deserialise(self, data: bytes) -> Any:
-        return json.loads(data.decode())
+    def deserialise(self, data: Union[bytes, str]) -> Any:
+        if isinstance(data, bytes):
+            data = data.decode()
+        return json.loads(data)
 
 
 class GZipEncoding(ContentEncoding):
