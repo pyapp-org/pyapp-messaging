@@ -9,6 +9,7 @@ class TestExtension:
     @pytest.fixture
     def registry(self):
         from pyapp.injection import default_registry
+
         default_registry.clear()
         yield default_registry
         default_registry.clear()
