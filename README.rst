@@ -12,13 +12,14 @@ without any changes to your main application code.
 Installation
 ============
 
-Install using *pip*::
+Install using *pip* or *pipenv*::
 
+    # Using pip
     pip install pyapp-Messaging
 
-Install using *pipenv*::
-
+    # Using pipenv
     pipenv install pyapp-Messaging
+
 
 
 Usage
@@ -45,7 +46,3 @@ or using `asyncio`::
 
 API
 ===
-
-`pyapp_ext.messaging.do_foo(name: str)`
-
-    Documentation of do foo!
