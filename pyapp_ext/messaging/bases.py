@@ -2,12 +2,7 @@ import abc
 
 from typing import Dict, Sequence, Any
 
-__all__ = (
-    "MessageSender",
-    "MessageReceiver",
-    "MessagePublisher",
-    "MessageSubscriber",
-)
+__all__ = ("MessageSender", "MessageReceiver", "MessagePublisher", "MessageSubscriber")
 
 
 class QueueBase(abc.ABC):

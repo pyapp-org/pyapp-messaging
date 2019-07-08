@@ -1,13 +1,8 @@
 import abc
 
-from typing import Dict, Sequence, Any
+from typing import Dict, Any
 
-__all__ = (
-    "MessageSender",
-    "MessageReceiver",
-    "MessagePublisher",
-    "MessageSubscriber",
-)
+__all__ = ("MessageSender", "MessageReceiver", "MessagePublisher", "MessageSubscriber")
 
 
 class QueueBase(abc.ABC):

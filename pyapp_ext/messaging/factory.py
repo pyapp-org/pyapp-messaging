@@ -1,11 +1,6 @@
 from pyapp.conf.helpers import NamedPluginFactory
 
-from .bases import (
-    MessageSender,
-    MessageReceiver,
-    MessagePublisher,
-    MessageSubscriber,
-)
+from .bases import MessageSender, MessageReceiver, MessagePublisher, MessageSubscriber
 
 __all__ = (
     "message_sender_factory",
