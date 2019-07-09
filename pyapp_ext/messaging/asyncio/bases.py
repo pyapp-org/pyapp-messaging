@@ -71,17 +71,17 @@ class MessageSender(QueueBase, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     async def send_raw(
         self, body: bytes, *, content_type: str = None, content_encoding: str = None
-    ):
+    ) -> str:
         """
         Send a raw message to the task queue. This accepts a prepared and encoded body.
         """
 
-    async def send(self, **kwargs: Any):
+    async def send(self, **kwargs: Any) -> str:
         """
         Send a message to the task queue.
         """
         serialisation = self.serialisation
-        await self.send_raw(
+        return await self.send_raw(
             serialisation.serialise(kwargs),
             content_type=serialisation.content_type,
             content_encoding=serialisation.content_encoding,
@@ -146,17 +146,17 @@ class MessagePublisher(QueueBase, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     async def publish_raw(
         self, body: bytes, *, content_type: str = None, content_encoding: str = None
-    ):
+    ) -> str:
         """
         Publish a raw message to queue. This accepts a prepared and encoded body.
         """
 
-    async def publish(self, **kwargs: Any):
+    async def publish(self, **kwargs: Any) -> str:
         """
         Publish a message to queue
         """
         serialisation = self.serialisation
-        await self.publish_raw(
+        return await self.publish_raw(
             serialisation.serialise(kwargs),
             content_type=serialisation.content_type,
             content_encoding=serialisation.content_encoding,
