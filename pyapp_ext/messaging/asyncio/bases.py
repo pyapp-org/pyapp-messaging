@@ -1,14 +1,29 @@
 import abc
-import asyncio
+import dataclasses
 
-from typing import Any
+from typing import Any, Callable, Awaitable
+from pyapp import events
 
 from ..serialisation import Serialise, JSONSerialise
 
-__all__ = ("MessageSender", "MessageReceiver", "MessagePublisher", "MessageSubscriber")
+__all__ = (
+    "MessageSender",
+    "MessageReceiver",
+    "MessagePublisher",
+    "MessageSubscriber",
+    "Message",
+)
 
 
 DEFAULT_SERIALISE = JSONSerialise()
+
+
+@dataclasses.dataclass
+class Message:
+    body: str
+    content_type: str
+    content_encoding: str
+    queue: Any
 
 
 class QueueBase(abc.ABC):
@@ -88,6 +103,8 @@ class MessageReceiver(QueueBase, metaclass=abc.ABCMeta):
 
     __slots__ = ()
 
+    new_message = events.AsyncCallback[Callable[[Message], Awaitable]]()
+
     async def receive(
         self,
         message_body: bytes,
@@ -97,9 +114,13 @@ class MessageReceiver(QueueBase, metaclass=abc.ABCMeta):
         """
         Called when a message is received.
         """
-        body = self.serialisation.deserialise(message_body)
-        print(content_type, content_encoding, body)
-        await asyncio.sleep(1)
+        msg = Message(
+            self.serialisation.deserialise(message_body),
+            content_type,
+            content_encoding,
+            self,
+        )
+        await self.new_message(msg)
 
     @abc.abstractmethod
     async def listen(self):
@@ -156,6 +177,8 @@ class MessageSubscriber(QueueBase, metaclass=abc.ABCMeta):
 
     __slots__ = ()
 
+    new_message = events.AsyncCallback[Callable[[Message], Awaitable]]()
+
     async def receive(
         self,
         message_body: bytes,
@@ -165,9 +188,13 @@ class MessageSubscriber(QueueBase, metaclass=abc.ABCMeta):
         """
         Called when a message is received.
         """
-        body = self.serialisation.deserialise(message_body)
-        print(content_type, content_encoding, body)
-        await asyncio.sleep(1)
+        msg = Message(
+            self.serialisation.deserialise(message_body),
+            content_type,
+            content_encoding,
+            self,
+        )
+        await self.new_message(msg)
 
     @abc.abstractmethod
     async def listen(self):
