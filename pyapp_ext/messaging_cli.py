@@ -16,32 +16,44 @@ class Extension:
     def register_commands(root: CommandGroup):
         group = root.create_command_group("msg-queue")
 
-        @group.command(help_text="Send a message to a Message Queue")
+        @group.command
         @argument("NAME", help_text="Name of queue from config.")
         @argument("--body", type=FileType("r"))
         def send(opts: CommandOptions):
+            """
+            Send a message to a Message Queue
+            """
             from .messaging.asyncio.cli import send
 
             send(opts.body.read(), opts.NAME)
 
-        @group.command(help_text="Send a message to a Message Queue")
+        @group.command
         @argument("NAME", help_text="Name of queue from config.")
         def receiver(opts: CommandOptions):
+            """
+            Send a message to a Message Queue
+            """
             from .messaging.asyncio.cli import receiver
 
             receiver(opts.NAME)
 
-        @group.command(help_text="Send a message to a Pub/Sub Queue")
+        @group.command
         @argument("NAME", help_text="Name of queue from config.")
         @argument("--body", type=FileType("r"))
         def publish(opts: CommandOptions):
+            """
+            Send a message to a Pub/Sub Queue
+            """
             from .messaging.asyncio.cli import publish
 
             publish(opts.body.read(), opts.NAME)
 
-        @group.command(help_text="Send a message to a Message Queue")
+        @group.command
         @argument("NAME", help_text="Name of queue from config.")
         def subscriber(opts: CommandOptions):
+            """
+            Send a message to a Message Queue
+            """
             from .messaging.asyncio.cli import subscriber
 
             subscriber(opts.NAME)
