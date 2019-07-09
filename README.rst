@@ -8,6 +8,7 @@ The messaging extension provides an abstract interface to various messaging
 implementations. This lets your application seamlessly migrate from AMQP to SQS
 without any changes to your main application code.
 
+.. note:: The primary focus of work is on asyncio based queues.
 
 Installation
 ============
