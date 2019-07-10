@@ -1,4 +1,5 @@
 from asyncio import AbstractEventLoop
+from colorama import Fore
 from pyapp.injection import inject
 from typing import Any
 
@@ -60,9 +61,15 @@ def configure(*, loop: AbstractEventLoop):
         for queue_factory in factories:
             print(f"Configuring queues in {type(queue_factory)}")
             for config_name in queue_factory.available:
-                print(f" - {config_name}")
+                print(f"- {Fore.BLUE}{config_name:20s}{Fore.RESET}", end="")
+
                 instance = queue_factory.create(config_name)
-                await instance.configure()
+                try:
+                    await instance.configure()
+                except Exception as ex:
+                    print(f" {Fore.RED}[Failed]{Fore.RESET}: {ex}")
+                else:
+                    print(f" {Fore.GREEN}[OK]{Fore.RESET}")
             print()
 
     loop.run_until_complete(_configure())
