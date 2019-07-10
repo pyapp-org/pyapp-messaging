@@ -36,7 +36,10 @@ PUBLISH_MESSAGE_QUEUES = {
         "pyapp_ext.aio_pika.queues.MessagePublisher",
         {"queue_name": "pubsub-queue"},
     ),
-    "aws": ("pyapp_ext.aiobotocore.queues.MessagePublisher", {"topic_arn": "http://"}),
+    "aws": (
+        "pyapp_ext.messaging.asyncio.queues.BroadcastMessagePublisher",
+        {"target_queues": ["aws"]},
+    ),
 }
 
 SUBSCRIBE_MESSAGE_QUEUES = {
@@ -44,5 +47,11 @@ SUBSCRIBE_MESSAGE_QUEUES = {
         "pyapp_ext.aio_pika.queues.MessageSubscriber",
         {"queue_name": "pubsub-queue"},
     ),
-    # "aws": ("pyapp_ext.aiobotocore.queues.PubSubQueue", {"url": "http://"}),
+    "aws": (
+        "pyapp_ext.aiobotocore.queues.MessageReceiver",
+        {
+            "queue_name": "message-queue",
+            "client_args": {"endpoint_url": "http://localhost:9324"},
+        },
+    ),
 }
