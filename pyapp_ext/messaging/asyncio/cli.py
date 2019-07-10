@@ -45,3 +45,24 @@ def subscriber(config_name: str, *, loop: AbstractEventLoop):
             await queue.listen()
 
     loop.run_until_complete(_receiver())
+
+
+@inject
+def configure(*, loop: AbstractEventLoop):
+    factories = [
+        factory.message_sender_factory,
+        factory.message_receiver_factory,
+        factory.message_publisher_factory,
+        factory.message_subscriber_factory,
+    ]
+
+    async def _configure():
+        for queue_factory in factories:
+            print(f"Configuring queues in {type(queue_factory)}")
+            for config_name in queue_factory.available:
+                print(f" - {config_name}")
+                instance = queue_factory.create(config_name)
+                await instance.configure()
+            print()
+
+    loop.run_until_complete(_configure())
