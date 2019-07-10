@@ -57,3 +57,12 @@ class Extension:
             from .messaging.asyncio.cli import subscriber
 
             subscriber(opts.NAME)
+
+        @group.command
+        def configure(opts: CommandOptions):
+            """
+            Configure/Create queues (if possible)
+            """
+            from .messaging.asyncio.cli import configure
+
+            configure()
