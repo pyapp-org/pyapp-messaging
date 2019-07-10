@@ -87,6 +87,11 @@ class MessageSender(QueueBase, metaclass=abc.ABCMeta):
             content_encoding=serialisation.content_encoding,
         )
 
+    async def configure(self):
+        """
+        Configure/Create message queue
+        """
+
 
 class MessageReceiver(QueueBase, metaclass=abc.ABCMeta):
     """
@@ -128,6 +133,11 @@ class MessageReceiver(QueueBase, metaclass=abc.ABCMeta):
         Start listening on the queue for messages
         """
 
+    async def configure(self):
+        """
+        Configure/Create message queue
+        """
+
 
 class MessagePublisher(QueueBase, metaclass=abc.ABCMeta):
     """
@@ -146,7 +156,7 @@ class MessagePublisher(QueueBase, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     async def publish_raw(
         self, body: bytes, *, content_type: str = None, content_encoding: str = None
-    ) -> str:
+    ):
         """
         Publish a raw message to queue. This accepts a prepared and encoded body.
         """
@@ -161,6 +171,11 @@ class MessagePublisher(QueueBase, metaclass=abc.ABCMeta):
             content_type=serialisation.content_type,
             content_encoding=serialisation.content_encoding,
         )
+
+    async def configure(self):
+        """
+        Configure/Create message queue
+        """
 
 
 class MessageSubscriber(QueueBase, metaclass=abc.ABCMeta):
@@ -200,4 +215,9 @@ class MessageSubscriber(QueueBase, metaclass=abc.ABCMeta):
     async def listen(self):
         """
         Subscribe to a named topic
+        """
+
+    async def configure(self):
+        """
+        Configure/Create message queue
         """
