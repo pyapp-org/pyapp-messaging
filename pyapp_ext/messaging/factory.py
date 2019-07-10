@@ -1,4 +1,4 @@
-from pyapp.conf.helpers import NamedPluginFactory
+from pyapp.conf.helpers import NamedPluginFactory, NoDefault
 
 from .bases import MessageSender, MessageReceiver, MessagePublisher, MessageSubscriber
 
@@ -14,21 +14,21 @@ __all__ = (
 )
 
 message_sender_factory = NamedPluginFactory[MessageSender](
-    "MESSAGE_QUEUES", abc=MessageSender
+    "SEND_MESSAGE_QUEUES", abc=MessageSender, default_name=NoDefault
 )
 get_sender = message_sender_factory.create
 
 message_receiver_factory = NamedPluginFactory[MessageReceiver](
-    "MESSAGE_QUEUES", abc=MessageReceiver
+    "RECEIVE_MESSAGE_QUEUES", abc=MessageReceiver, default_name=NoDefault
 )
 get_receiver = message_receiver_factory.create
 
 message_publisher_factory = NamedPluginFactory[MessagePublisher](
-    "PUB_SUB_QUEUES", abc=MessagePublisher
+    "PUBLISH_MESSAGE_QUEUES", abc=MessagePublisher, default_name=NoDefault
 )
 get_publisher = message_publisher_factory.create
 
 message_subscriber_factory = NamedPluginFactory[MessageSubscriber](
-    "PUB_SUB_QUEUES", abc=MessageSubscriber
+    "SUBSCRIBE_MESSAGE_QUEUES", abc=MessageSubscriber, default_name=NoDefault
 )
 get_subscriber = message_subscriber_factory.create
