@@ -1,7 +1,6 @@
 import abc
-import dataclasses
 
-from typing import Any, Callable, Awaitable
+from typing import Any, Callable, Awaitable, NamedTuple
 from pyapp import events
 
 from ..serialisation import Serialise, JSONSerialise
@@ -18,8 +17,11 @@ __all__ = (
 DEFAULT_SERIALISE = JSONSerialise()
 
 
-@dataclasses.dataclass
-class Message:
+class Message(NamedTuple):
+    """
+    Message received
+    """
+
     body: str
     content_type: str
     content_encoding: str
