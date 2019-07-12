@@ -25,7 +25,7 @@ class Serialise(abc.ABC):
         """
 
 
-class ContentType(Serialise, metaclass=abc.ABCMeta):
+class ContentType(Serialise, abc.ABC):
     """
     Content type serialisation
     """
@@ -33,7 +33,7 @@ class ContentType(Serialise, metaclass=abc.ABCMeta):
     __slots__ = ()
 
 
-class ContentEncoding(Serialise, metaclass=abc.ABCMeta):
+class ContentEncoding(Serialise, abc.ABC):
     """
     Content encoding serialisation
     """
@@ -83,7 +83,10 @@ class GZipEncoding(ContentEncoding):
     content_encoding = "GZIP"
 
     def serialise(self, data: Any) -> bytes:
-        return gzip.compress(self.content.serialise(data))
+        data = self.content.serialise(data)
+        if isinstance(data, str):
+            data = data.encode()
+        return gzip.compress(data)
 
     def deserialise(self, data: bytes) -> Any:
         return self.content.deserialise(gzip.decompress(data))
