@@ -1,14 +1,31 @@
 import abc
-import asyncio
 
-from typing import Any
+from typing import Any, Callable, Awaitable, NamedTuple
+from pyapp import events
 
 from ..serialisation import Serialise, JSONSerialise
 
-__all__ = ("MessageSender", "MessageReceiver", "MessagePublisher", "MessageSubscriber")
+__all__ = (
+    "MessageSender",
+    "MessageReceiver",
+    "MessagePublisher",
+    "MessageSubscriber",
+    "Message",
+)
 
 
 DEFAULT_SERIALISE = JSONSerialise()
+
+
+class Message(NamedTuple):
+    """
+    Message received
+    """
+
+    body: str
+    content_type: str
+    content_encoding: str
+    queue: Any
 
 
 class QueueBase(abc.ABC):
@@ -56,21 +73,26 @@ class MessageSender(QueueBase, metaclass=abc.ABCMeta):
     @abc.abstractmethod
     async def send_raw(
         self, body: bytes, *, content_type: str = None, content_encoding: str = None
-    ):
+    ) -> str:
         """
         Send a raw message to the task queue. This accepts a prepared and encoded body.
         """
 
-    async def send(self, **kwargs: Any):
+    async def send(self, **kwargs: Any) -> str:
         """
         Send a message to the task queue.
         """
         serialisation = self.serialisation
-        await self.send_raw(
+        return await self.send_raw(
             serialisation.serialise(kwargs),
             content_type=serialisation.content_type,
             content_encoding=serialisation.content_encoding,
         )
+
+    async def configure(self):
+        """
+        Configure/Create message queue
+        """
 
 
 class MessageReceiver(QueueBase, metaclass=abc.ABCMeta):
@@ -88,6 +110,8 @@ class MessageReceiver(QueueBase, metaclass=abc.ABCMeta):
 
     __slots__ = ()
 
+    new_message = events.AsyncCallback[Callable[[Message], Awaitable]]()
+
     async def receive(
         self,
         message_body: bytes,
@@ -97,14 +121,23 @@ class MessageReceiver(QueueBase, metaclass=abc.ABCMeta):
         """
         Called when a message is received.
         """
-        body = self.serialisation.deserialise(message_body)
-        print(content_type, content_encoding, body)
-        await asyncio.sleep(1)
+        msg = Message(
+            self.serialisation.deserialise(message_body),
+            content_type,
+            content_encoding,
+            self,
+        )
+        await self.new_message(msg)
 
     @abc.abstractmethod
     async def listen(self):
         """
         Start listening on the queue for messages
+        """
+
+    async def configure(self):
+        """
+        Configure/Create message queue
         """
 
 
@@ -130,16 +163,21 @@ class MessagePublisher(QueueBase, metaclass=abc.ABCMeta):
         Publish a raw message to queue. This accepts a prepared and encoded body.
         """
 
-    async def publish(self, **kwargs: Any):
+    async def publish(self, **kwargs: Any) -> str:
         """
         Publish a message to queue
         """
         serialisation = self.serialisation
-        await self.publish_raw(
+        return await self.publish_raw(
             serialisation.serialise(kwargs),
             content_type=serialisation.content_type,
             content_encoding=serialisation.content_encoding,
         )
+
+    async def configure(self):
+        """
+        Configure/Create message queue
+        """
 
 
 class MessageSubscriber(QueueBase, metaclass=abc.ABCMeta):
@@ -156,6 +194,8 @@ class MessageSubscriber(QueueBase, metaclass=abc.ABCMeta):
 
     __slots__ = ()
 
+    new_message = events.AsyncCallback[Callable[[Message], Awaitable]]()
+
     async def receive(
         self,
         message_body: bytes,
@@ -165,12 +205,21 @@ class MessageSubscriber(QueueBase, metaclass=abc.ABCMeta):
         """
         Called when a message is received.
         """
-        body = self.serialisation.deserialise(message_body)
-        print(content_type, content_encoding, body)
-        await asyncio.sleep(1)
+        msg = Message(
+            self.serialisation.deserialise(message_body),
+            content_type,
+            content_encoding,
+            self,
+        )
+        await self.new_message(msg)
 
     @abc.abstractmethod
     async def listen(self):
         """
         Subscribe to a named topic
+        """
+
+    async def configure(self):
+        """
+        Configure/Create message queue
         """
