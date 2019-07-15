@@ -23,7 +23,7 @@ class Extension:
             """
             Send a message to a Message Queue
             """
-            from .messaging.asyncio.cli import send
+            from ..asyncio.cli import send
 
             send(opts.body.read(), opts.NAME)
 
@@ -33,7 +33,7 @@ class Extension:
             """
             Send a message to a Message Queue
             """
-            from .messaging.asyncio.cli import receiver
+            from ..asyncio.cli import receiver
 
             receiver(opts.NAME)
 
@@ -44,7 +44,7 @@ class Extension:
             """
             Send a message to a Pub/Sub Queue
             """
-            from .messaging.asyncio.cli import publish
+            from ..asyncio.cli import publish
 
             publish(opts.body.read(), opts.NAME)
 
@@ -54,7 +54,7 @@ class Extension:
             """
             Send a message to a Message Queue
             """
-            from .messaging.asyncio.cli import subscriber
+            from ..asyncio.cli import subscriber
 
             subscriber(opts.NAME)
 
@@ -63,6 +63,6 @@ class Extension:
             """
             Configure/Create queues (if possible)
             """
-            from .messaging.asyncio.cli import configure
+            from ..asyncio.cli import configure
 
             configure()
