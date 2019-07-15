@@ -24,10 +24,10 @@ class MockFactories:
         self._actions = {}
 
     def __getattr__(self, item):
-        if item in ["get_sender", "get_receiver", "get_publisher", "get_subscriber"]:
+        if item in ["get_sender", "get_receiver"]:
             return self._actions.setdefault(item, MockCheck(self._mock_factory))
 
-        if item in ["send", "listen", "publish", "subscribe"]:
+        if item in ["send", "listen"]:
             return self._actions.setdefault(item, MockCheck(self._mock_action))
 
         raise AttributeError(f"Attribute not found `{item}`")
@@ -63,21 +63,3 @@ class TestCLI:
 
         mock.get_receiver.assert_called_with("bar")
         mock.listen.assert_called_with()
-
-    def test_publish(self, monkeypatch):
-        mock = MockFactories()
-        monkeypatch.setattr(cli, "factory", mock)
-
-        cli.publish("foo", "bar", loop=asyncio.get_event_loop())
-
-        mock.get_publisher.assert_called_with("bar")
-        mock.publish.assert_called_with(data="foo")
-
-    def test_subscriber(self, monkeypatch):
-        mock = MockFactories()
-        monkeypatch.setattr(cli, "factory", mock)
-
-        cli.subscriber("bar", loop=asyncio.get_event_loop())
-
-        mock.get_subscriber.assert_called_with("bar")
-        mock.subscribe.assert_called_with()

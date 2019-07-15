@@ -20,5 +20,3 @@ class Extension:
 
         register_factory(MessageSender, factory.get_sender)
         register_factory(MessageReceiver, factory.get_receiver)
-        register_factory(MessagePublisher, factory.get_publisher)
-        register_factory(MessageSubscriber, factory.get_subscriber)

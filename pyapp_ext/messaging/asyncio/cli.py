@@ -30,32 +30,8 @@ def receiver(config_name: str, *, loop: AbstractEventLoop):
 
 
 @inject
-def publish(data: Any, config_name: str, *, loop: AbstractEventLoop):
-    async def _send():
-        async with factory.get_publisher(config_name) as queue:
-            await queue.publish(data=data)
-
-    loop.run_until_complete(_send())
-
-
-@inject
-def subscriber(config_name: str, *, loop: AbstractEventLoop):
-    async def _receiver():
-        async with factory.get_subscriber(config_name) as queue:
-            queue.new_message.bind(on_new_message)
-            await queue.listen()
-
-    loop.run_until_complete(_receiver())
-
-
-@inject
 def configure(*, loop: AbstractEventLoop):
-    factories = [
-        factory.message_sender_factory,
-        factory.message_receiver_factory,
-        factory.message_publisher_factory,
-        factory.message_subscriber_factory,
-    ]
+    factories = [factory.message_sender_factory, factory.message_receiver_factory]
 
     async def _configure():
         for queue_factory in factories:

@@ -27,34 +27,3 @@ Example settings::
     }
     
 """
-
-
-PUBLISH_MESSAGE_QUEUES = {}
-"""
-Message receive queue definitions.
-
-Example settings::
-
-    PUBLISH_MESSAGE_QUEUES = {
-        "amqp": (
-            "pyapp_ext.aio_pika.queues.MessagePublisher",
-            {"exchange_name": "pubsub-queue"},
-        ),
-    }
-
-"""
-
-SUBSCRIBE_MESSAGE_QUEUES = {}
-"""
-Message receive queue definitions.
-
-Example settings::
-
-    SUBSCRIBE_MESSAGE_QUEUES = {
-        "amqp": (
-            "pyapp_ext.aio_pika.queues.MessageSubscriber",
-            {"exchange_name": "pubsub-queue"},
-        ),
-    }
-
-"""

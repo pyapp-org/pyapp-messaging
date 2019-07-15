@@ -66,7 +66,7 @@ class TestBroadcastMessagePublisher:
         monkeypatch.setattr(queues, "get_sender", mock_get_sender)
         target = queues.BroadcastMessagePublisher(target_queues=("foo", "bar"))
 
-        await target.publish_raw(*args, **kwargs)
+        await target.send_raw(*args, **kwargs)
 
         for queue in target._queues:
             queue.send_raw.assert_called_with(*args, **kwargs)

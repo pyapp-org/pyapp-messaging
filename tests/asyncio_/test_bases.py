@@ -5,7 +5,7 @@ from pyapp.events import bind_to
 from pyapp_ext.messaging.asyncio import bases
 
 
-class QueueTest(bases.MessageSender, bases.MessagePublisher):
+class QueueTest(bases.MessageSender):
     def __init__(self):
         self.open_called = False
         self.close_called = False
@@ -63,19 +63,6 @@ async def test_message_sender():
     )
 
 
-@pytest.mark.asyncio
-async def test_message_publisher():
-    target = QueueTest()
-
-    await target.publish(foo="bar", eek=123)
-
-    assert len(target.publish_raw_calls) == 1
-    assert target.publish_raw_calls[0] == (
-        ('{"foo": "bar", "eek": 123}',),
-        {"content_type": "application/json", "content_encoding": None},
-    )
-
-
 class MessageReceiverTest(bases.MessageReceiver):
     async def listen(self):
         pass  # Do nothing
@@ -84,29 +71,6 @@ class MessageReceiverTest(bases.MessageReceiver):
 @pytest.mark.asyncio
 async def test_message_receiver():
     target = MessageReceiverTest()
-
-    actual = None
-
-    @bind_to(target.new_message)
-    async def callback(msg):
-        nonlocal actual
-        actual = msg
-
-    await target.receive(b'{"foo": "bar"}', content_type="application/json")
-
-    assert isinstance(actual, bases.Message)
-    assert actual.body == {"foo": "bar"}
-    assert actual.content_type == "application/json"
-
-
-class MessageSubscriberTest(bases.MessageSubscriber):
-    async def listen(self):
-        pass  # Do nothing
-
-
-@pytest.mark.asyncio
-async def test_message_subscriber():
-    target = MessageSubscriberTest()
 
     actual = None
 
