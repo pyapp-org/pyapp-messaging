@@ -29,10 +29,10 @@ Usage
 This library is easiest used with the injection framework eg::
 
     from pyapp.injection import inject, Args
-    from pyapp_ext.messaging import MessageQueue
+    from pyapp_ext.messaging import MessageReceiver
 
     @inject
-    def my_function(queue: MessageQueue = Args(name="job_queue")):
+    def my_function(queue: MessageReceiver = Args(name="job_queue")):
         queue.send_message("Do job A")
 
 or using `asyncio`::
