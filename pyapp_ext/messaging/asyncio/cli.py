@@ -1,8 +1,11 @@
+import sys
+
 from asyncio import AbstractEventLoop
 from colorama import Fore
 from pyapp.injection import inject
 from typing import Any
 
+from pyapp_ext.messaging.exceptions import QueueNotFound
 from . import factory, Message
 
 
@@ -13,20 +16,34 @@ async def on_new_message(msg: Message):
 @inject
 def send(data: Any, config_name: str, *, loop: AbstractEventLoop):
     async def _send():
-        async with factory.get_sender(config_name) as queue:
-            await queue.send(data=data)
+        try:
+            async with factory.get_sender(config_name) as queue:
+                await queue.send(data=data)
 
-    loop.run_until_complete(_send())
+        except QueueNotFound:
+            print(f"Queue not found.", file=sys.stderr)
+            return -1
+
+        return 0
+
+    return loop.run_until_complete(_send())
 
 
 @inject
 def receiver(config_name: str, *, loop: AbstractEventLoop):
     async def _receiver():
-        async with factory.get_receiver(config_name) as queue:
-            queue.new_message.bind(on_new_message)
-            await queue.listen()
+        try:
+            async with factory.get_receiver(config_name) as queue:
+                queue.new_message.bind(on_new_message)
+                await queue.listen()
 
-    loop.run_until_complete(_receiver())
+        except QueueNotFound:
+            print(f"Queue not found.", file=sys.stderr)
+            return -1
+
+        return 0
+
+    return loop.run_until_complete(_receiver())
 
 
 @inject
