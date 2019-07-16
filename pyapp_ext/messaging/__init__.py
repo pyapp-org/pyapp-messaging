@@ -1,5 +1,15 @@
 """
 pyApp - Messaging
+~~~~~~~~~~~~~~~~~
+
+A simple messaging interface covering Message Queue and Pub/Sub style queues
+for distributed applications.
+
+Provides three extensions Messaging, Messaging-Async and Messaging-CLI.
+
+Messaging itself does not provide connectivity to messaging services, instead
+implementation specific extensions provide client libraries that implement the
+queue interfaces.
 
 """
 from .bases import *
