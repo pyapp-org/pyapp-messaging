@@ -65,4 +65,6 @@ def configure(*, loop: AbstractEventLoop):
                     print(f" {Fore.GREEN}[OK]{Fore.RESET}")
             print()
 
-    loop.run_until_complete(_configure())
+        return 0
+
+    return loop.run_until_complete(_configure())
