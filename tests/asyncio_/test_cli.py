@@ -53,7 +53,7 @@ class TestCLI:
         cli.send("foo", "bar", loop=asyncio.get_event_loop())
 
         mock.get_sender.assert_called_with("bar")
-        mock.send.assert_called_with({"data": "foo"})
+        mock.send.assert_called_with(data="foo")
 
     def test_receiver(self, monkeypatch):
         mock = MockFactories()
@@ -71,7 +71,7 @@ class TestCLI:
         cli.publish("foo", "bar", loop=asyncio.get_event_loop())
 
         mock.get_publisher.assert_called_with("bar")
-        mock.publish.assert_called_with({"data": "foo"})
+        mock.publish.assert_called_with(data="foo")
 
     def test_subscriber(self, monkeypatch):
         mock = MockFactories()
