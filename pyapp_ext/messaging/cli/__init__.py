@@ -2,8 +2,9 @@
 pyApp - Messaging CLI
 
 """
-from argparse import FileType
+import sys
 
+from argparse import FileType
 from pyapp.app import argument, CommandGroup, CommandOptions
 
 
@@ -18,7 +19,12 @@ class Extension:
 
         @group.command
         @argument("NAME", help_text="Name of queue from config.")
-        @argument("--body", type=FileType("r"))
+        @argument(
+            "--body",
+            type=FileType("r"),
+            default=sys.stdin,
+            help_text="Body of the message; defaults to stdin",
+        )
         def send(opts: CommandOptions):
             """
             Send a message to a Message Queue
@@ -38,7 +44,7 @@ class Extension:
             receiver(opts.NAME)
 
         @group.command
-        def configure(opts: CommandOptions):
+        def configure(_: CommandOptions):
             """
             Configure/Create queues (if possible)
             """
