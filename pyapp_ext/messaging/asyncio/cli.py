@@ -3,7 +3,7 @@ import sys
 from asyncio import AbstractEventLoop
 from colorama import Fore
 from functools import partial
-from pyapp.exceptions import NotFound
+from pyapp.exceptions import NotFound, CannotImport
 from pyapp.injection import inject
 from typing import Any
 
@@ -25,8 +25,8 @@ def send(data: Any, config_name: str, *, loop: AbstractEventLoop):
             async with factory.get_sender(config_name) as queue:
                 await queue.send(data=data)
 
-        except NotFound:
-            print_err(f"Queue config `{config_name}` not found`.")
+        except (NotFound, CannotImport) as ex:
+            print_err(str(ex))
             return -1
 
         except QueueNotFound:
@@ -46,8 +46,8 @@ def receiver(config_name: str, *, loop: AbstractEventLoop):
                 queue.new_message.bind(on_new_message)
                 await queue.listen()
 
-        except NotFound:
-            print_err(f"Queue config `{config_name}` not found`.")
+        except (NotFound, CannotImport) as ex:
+            print_err(str(ex))
             return -1
 
         except QueueNotFound:
@@ -69,13 +69,17 @@ def configure(*, loop: AbstractEventLoop):
             for config_name in queue_factory.available:
                 print(f"- {Fore.BLUE}{config_name:20s}{Fore.RESET}", end="")
 
-                instance = queue_factory.create(config_name)
                 try:
-                    await instance.configure()
-                except Exception as ex:
-                    print(f" {Fore.RED}[Failed]{Fore.RESET}: {ex}")
+                    instance = queue_factory.create(config_name)
+                except CannotImport as ex:
+                    print(f" {Fore.RED}[Critical]{Fore.RESET}: {ex}")
                 else:
-                    print(f" {Fore.GREEN}[OK]{Fore.RESET}")
+                    try:
+                        await instance.configure()
+                    except Exception as ex:
+                        print(f" {Fore.RED}[Failed]{Fore.RESET}: {ex}")
+                    else:
+                        print(f" {Fore.GREEN}[OK]{Fore.RESET}")
             print()
 
         return 0
