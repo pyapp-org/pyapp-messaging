@@ -1,7 +1,7 @@
 import asyncmock
 import pytest
 
-from pyapp.exceptions import NotFound
+from pyapp.exceptions import NotFound, CannotImport
 from pyapp_ext.messaging.asyncio import cli
 from pyapp_ext.messaging.exceptions import QueueNotFound
 
@@ -120,11 +120,13 @@ class TestCLI:
         ) = asyncmock.AsyncMock()
         mock_sender.configure.side_effect = KeyError
 
-        mock_factories.message_receiver_factory.available = []
+        mock_factories.message_receiver_factory.available = ["bar"]
+        mock_factories.message_receiver_factory.create.side_effect = CannotImport
 
         monkeypatch.setattr(cli, "factory", mock_factories)
 
         cli.configure(loop=event_loop)
 
         mock_factories.message_sender_factory.create.assert_called_with("foo")
+        mock_factories.message_receiver_factory.create.assert_called_with("bar")
         mock_sender.configure.assert_called()
