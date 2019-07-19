@@ -4,51 +4,38 @@ AWS_CREDENTIALS = {"default": {"region": "ap-southeast-2"}}
 
 
 SEND_MESSAGE_QUEUES = {
-    "amqp": (
-        "pyapp_ext.aio_pika.queues.MessageSender",
+    "amqp-direct": (
+        "pyapp_ext.aio_pika.queues.DirectSender",
+        {"queue_name": "message-queue"},
+    ),
+    "amqp-fanout": (
+        "pyapp_ext.aio_pika.queues.FanOutSender",
         {"queue_name": "message-queue"},
     ),
     "aws": (
-        "pyapp_ext.aiobotocore.queues.MessageSender",
+        "pyapp_ext.aiobotocore.queues.SQSSender",
         {
             "queue_name": "message-queue",
             "client_args": {"endpoint_url": "http://localhost:9324"},
         },
     ),
-}
-
-RECEIVE_MESSAGE_QUEUES = {
-    "amqp": (
-        "pyapp_ext.aio_pika.queues.MessageReceiver",
-        {"queue_name": "message-queue"},
-    ),
-    "aws": (
-        "pyapp_ext.aiobotocore.queues.MessageReceiver",
-        {
-            "queue_name": "message-queue",
-            "client_args": {"endpoint_url": "http://localhost:9324"},
-        },
-    ),
-}
-
-PUBLISH_MESSAGE_QUEUES = {
-    "amqp": (
-        "pyapp_ext.aio_pika.queues.MessagePublisher",
-        {"queue_name": "pubsub-queue"},
-    ),
-    "aws": (
+    "bcast": (
         "pyapp_ext.messaging.asyncio.queues.BroadcastMessagePublisher",
         {"target_queues": ["aws"]},
     ),
 }
 
-SUBSCRIBE_MESSAGE_QUEUES = {
-    "amqp": (
-        "pyapp_ext.aio_pika.queues.MessageSubscriber",
-        {"queue_name": "pubsub-queue"},
+RECEIVE_MESSAGE_QUEUES = {
+    "amqp-direct": (
+        "pyapp_ext.aio_pika.queues.Receiver",
+        {"queue_name": "message-queue"},
+    ),
+    "amqp-fanout": (
+        "pyapp_ext.aio_pika.queues.FanOutReceiver",
+        {"queue_name": "message-queue"},
     ),
     "aws": (
-        "pyapp_ext.aiobotocore.queues.MessageReceiver",
+        "pyapp_ext.aiobotocore.queues.SQSReceiver",
         {
             "queue_name": "message-queue",
             "client_args": {"endpoint_url": "http://localhost:9324"},
