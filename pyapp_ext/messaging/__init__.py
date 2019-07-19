@@ -12,7 +12,10 @@ implementation specific extensions provide client libraries that implement the
 queue interfaces.
 
 """
+from .__version__ import __version__
 from .bases import *
+
+version_info = (int(v) for v in __version__.split("."))
 
 
 class Extension:
