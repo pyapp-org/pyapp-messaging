@@ -2,6 +2,8 @@ import sys
 
 from asyncio import AbstractEventLoop
 from colorama import Fore
+from functools import partial
+from pyapp.exceptions import NotFound
 from pyapp.injection import inject
 from typing import Any
 
@@ -13,6 +15,9 @@ async def on_new_message(msg: Message):
     print(f"From {msg.queue} recieved: {msg.body}")
 
 
+print_err = partial(print, file=sys.stderr)
+
+
 @inject
 def send(data: Any, config_name: str, *, loop: AbstractEventLoop):
     async def _send():
@@ -20,9 +25,13 @@ def send(data: Any, config_name: str, *, loop: AbstractEventLoop):
             async with factory.get_sender(config_name) as queue:
                 await queue.send(data=data)
 
-        except QueueNotFound:
-            print(f"Queue not found.", file=sys.stderr)
+        except NotFound:
+            print_err(f"Queue config `{config_name}` not found`.")
             return -1
+
+        except QueueNotFound:
+            print_err(f"Queue not found.")
+            return -2
 
         return 0
 
@@ -37,9 +46,13 @@ def receiver(config_name: str, *, loop: AbstractEventLoop):
                 queue.new_message.bind(on_new_message)
                 await queue.listen()
 
-        except QueueNotFound:
-            print(f"Queue not found.", file=sys.stderr)
+        except NotFound:
+            print_err(f"Queue config `{config_name}` not found`.")
             return -1
+
+        except QueueNotFound:
+            print_err(f"Queue not found.")
+            return -2
 
         return 0
 
