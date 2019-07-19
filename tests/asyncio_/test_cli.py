@@ -1,6 +1,7 @@
 import asyncmock
 import pytest
 
+from pyapp.exceptions import NotFound
 from pyapp_ext.messaging.asyncio import cli
 from pyapp_ext.messaging.exceptions import QueueNotFound
 
@@ -28,6 +29,17 @@ class TestCLI:
         mock_factories.get_sender.assert_called_with("bar")
         mock_sender.send.assert_called_with(data="foo")
 
+    def test_send__config_not_found(self, monkeypatch, event_loop):
+        mock_factories = asyncmock.Mock()
+        mock_factories.get_sender.side_effect = NotFound
+
+        monkeypatch.setattr(cli, "factory", mock_factories)
+
+        actual = cli.send("foo", "bar", loop=event_loop)
+
+        assert actual == -1
+        mock_factories.get_sender.assert_called_with("bar")
+
     def test_send__queue_not_found(self, monkeypatch, event_loop):
         mock_factories = asyncmock.Mock()
         mock_factories.get_sender.return_value = mock_sender = asyncmock.AsyncMock()
@@ -35,8 +47,9 @@ class TestCLI:
 
         monkeypatch.setattr(cli, "factory", mock_factories)
 
-        cli.send("foo", "bar", loop=event_loop)
+        actual = cli.send("foo", "bar", loop=event_loop)
 
+        assert actual == -2
         mock_factories.get_sender.assert_called_with("bar")
         mock_sender.send.assert_called_with(data="foo")
 
@@ -53,6 +66,17 @@ class TestCLI:
         mock_receiver.listen.assert_called()
         mock_receiver.new_message.bind.assert_called_with(cli.on_new_message)
 
+    def test_receiver__config_not_found(self, monkeypatch, event_loop):
+        mock_factories = asyncmock.Mock()
+        mock_factories.get_receiver.side_effect = NotFound
+
+        monkeypatch.setattr(cli, "factory", mock_factories)
+
+        actual = cli.receiver("foo", loop=event_loop)
+
+        assert actual == -1
+        mock_factories.get_receiver.assert_called_with("foo")
+
     def test_receiver__queue_not_found(self, monkeypatch, event_loop):
         mock_factories = asyncmock.Mock()
         mock_factories.get_receiver.return_value = mock_receiver = asyncmock.AsyncMock()
@@ -61,8 +85,9 @@ class TestCLI:
 
         monkeypatch.setattr(cli, "factory", mock_factories)
 
-        cli.receiver("foo", loop=event_loop)
+        actual = cli.receiver("foo", loop=event_loop)
 
+        assert actual == -2
         mock_factories.get_receiver.assert_called_with("foo")
         mock_receiver.listen.assert_called()
 
