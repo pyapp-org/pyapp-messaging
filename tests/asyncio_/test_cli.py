@@ -57,6 +57,7 @@ class TestCLI:
         mock_factories = asyncmock.Mock()
         mock_factories.get_receiver.return_value = mock_receiver = asyncmock.AsyncMock()
         mock_receiver.listen.side_effect = QueueNotFound
+        mock_receiver.new_message.bind.not_async = True
 
         monkeypatch.setattr(cli, "factory", mock_factories)
 
