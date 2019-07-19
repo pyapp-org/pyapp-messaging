@@ -2,11 +2,11 @@ import asyncio
 
 from typing import Sequence
 
-from .bases import MessagePublisher
+from .bases import MessageSender
 from .factory import get_sender
 
 
-class BroadcastMessagePublisher(MessagePublisher):
+class BroadcastMessagePublisher(MessageSender):
     """
     Message publisher that simulates publishing to a pub/sub style broker by publishing
     to a list of incoming queues.
@@ -31,7 +31,7 @@ class BroadcastMessagePublisher(MessagePublisher):
         aw = [queue.close() for queue in self._queues]
         await asyncio.wait(aw)
 
-    async def publish_raw(
+    async def send_raw(
         self, body: bytes, *, content_type: str = None, content_encoding: str = None
     ):
         aw = [

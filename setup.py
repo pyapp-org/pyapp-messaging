@@ -1,3 +1,10 @@
+from pathlib import Path
 from setuptools import setup
 
-setup(version="0.1.2")
+here = Path(__file__).parent
+
+about = {}
+with (here / "pyapp_ext/messaging/__version__.py").open() as f:
+    exec(f.read(), about)
+
+setup(version=about["__version__"])

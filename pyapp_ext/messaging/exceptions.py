@@ -4,5 +4,5 @@ class MessagingError(Exception):
 
 class QueueNotFound(MessagingError):
     """
-    Specified queue was not found.
+    Specified Queue was not found.
     """

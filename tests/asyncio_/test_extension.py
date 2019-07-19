@@ -19,8 +19,6 @@ class TestExtension:
 
         target.ready()
 
-        assert len(registry) == 4
+        assert len(registry) == 2
         assert registry[bases.MessageSender] == factory.get_sender
         assert registry[bases.MessageReceiver] == factory.get_receiver
-        assert registry[bases.MessagePublisher] == factory.get_publisher
-        assert registry[bases.MessageSubscriber] == factory.get_subscriber
