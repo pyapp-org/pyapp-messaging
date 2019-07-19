@@ -1,83 +1,132 @@
-import asyncio
+import asyncmock
+import pytest
 
+from pyapp.exceptions import NotFound, CannotImport
 from pyapp_ext.messaging.asyncio import cli
-
-
-class MockCheck:
-    __slots__ = ("func", "_calls")
-
-    def __init__(self, func):
-        self.func = func
-        self._calls = []
-
-    def __call__(self, *args, **kwargs):
-        self._calls.append((args, kwargs))
-        return self.func(*args, **kwargs)
-
-    def assert_called_with(self, *args, **kwargs):
-        assert len(self._calls) > 0, "Not called"
-        assert self._calls[-1] == (args, kwargs)
-
-
-class MockFactories:
-    def __init__(self):
-        self._actions = {}
-
-    def __getattr__(self, item):
-        if item in ["get_sender", "get_receiver", "get_publisher", "get_subscriber"]:
-            return self._actions.setdefault(item, MockCheck(self._mock_factory))
-
-        if item in ["send", "listen", "publish", "subscribe"]:
-            return self._actions.setdefault(item, MockCheck(self._mock_action))
-
-        raise AttributeError(f"Attribute not found `{item}`")
-
-    async def __aenter__(self):
-        return self
-
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        pass
-
-    def _mock_factory(self, *args, **kwargs):
-        return self
-
-    async def _mock_action(self, *args, **kwargs):
-        pass
+from pyapp_ext.messaging.exceptions import QueueNotFound
 
 
 class TestCLI:
-    def test_send(self, monkeypatch):
-        mock = MockFactories()
-        monkeypatch.setattr(cli, "factory", mock)
+    @pytest.mark.asyncio
+    async def test_on_new_message(self):
+        await cli.on_new_message(
+            cli.Message(
+                body="Foo",
+                content_type="text/plain",
+                content_encoding="gzip",
+                queue=asyncmock.Mock(),
+            )
+        )
 
-        cli.send("foo", "bar", loop=asyncio.get_event_loop())
+    def test_send(self, monkeypatch, event_loop):
+        mock_factories = asyncmock.Mock()
+        mock_factories.get_sender.return_value = mock_sender = asyncmock.AsyncMock()
 
-        mock.get_sender.assert_called_with("bar")
-        mock.send.assert_called_with(data="foo")
+        monkeypatch.setattr(cli, "factory", mock_factories)
 
-    def test_receiver(self, monkeypatch):
-        mock = MockFactories()
-        monkeypatch.setattr(cli, "factory", mock)
+        cli.send("foo", "bar", loop=event_loop)
 
-        cli.receiver("bar", loop=asyncio.get_event_loop())
+        mock_factories.get_sender.assert_called_with("bar")
+        mock_sender.send.assert_called_with(data="foo")
 
-        mock.get_receiver.assert_called_with("bar")
-        mock.listen.assert_called_with()
+    def test_send__config_not_found(self, monkeypatch, event_loop):
+        mock_factories = asyncmock.Mock()
+        mock_factories.get_sender.side_effect = NotFound
 
-    def test_publish(self, monkeypatch):
-        mock = MockFactories()
-        monkeypatch.setattr(cli, "factory", mock)
+        monkeypatch.setattr(cli, "factory", mock_factories)
 
-        cli.publish("foo", "bar", loop=asyncio.get_event_loop())
+        actual = cli.send("foo", "bar", loop=event_loop)
 
-        mock.get_publisher.assert_called_with("bar")
-        mock.publish.assert_called_with(data="foo")
+        assert actual == -1
+        mock_factories.get_sender.assert_called_with("bar")
 
-    def test_subscriber(self, monkeypatch):
-        mock = MockFactories()
-        monkeypatch.setattr(cli, "factory", mock)
+    def test_send__queue_not_found(self, monkeypatch, event_loop):
+        mock_factories = asyncmock.Mock()
+        mock_factories.get_sender.return_value = mock_sender = asyncmock.AsyncMock()
+        mock_sender.send.side_effect = QueueNotFound
 
-        cli.subscriber("bar", loop=asyncio.get_event_loop())
+        monkeypatch.setattr(cli, "factory", mock_factories)
 
-        mock.get_subscriber.assert_called_with("bar")
-        mock.subscribe.assert_called_with()
+        actual = cli.send("foo", "bar", loop=event_loop)
+
+        assert actual == -2
+        mock_factories.get_sender.assert_called_with("bar")
+        mock_sender.send.assert_called_with(data="foo")
+
+    def test_receiver(self, monkeypatch, event_loop):
+        mock_factories = asyncmock.Mock()
+        mock_factories.get_receiver.return_value = mock_receiver = asyncmock.AsyncMock()
+        mock_receiver.new_message.bind.not_async = True
+
+        monkeypatch.setattr(cli, "factory", mock_factories)
+
+        cli.receiver("foo", loop=event_loop)
+
+        mock_factories.get_receiver.assert_called_with("foo")
+        mock_receiver.listen.assert_called()
+        mock_receiver.new_message.bind.assert_called_with(cli.on_new_message)
+
+    def test_receiver__config_not_found(self, monkeypatch, event_loop):
+        mock_factories = asyncmock.Mock()
+        mock_factories.get_receiver.side_effect = NotFound
+
+        monkeypatch.setattr(cli, "factory", mock_factories)
+
+        actual = cli.receiver("foo", loop=event_loop)
+
+        assert actual == -1
+        mock_factories.get_receiver.assert_called_with("foo")
+
+    def test_receiver__queue_not_found(self, monkeypatch, event_loop):
+        mock_factories = asyncmock.Mock()
+        mock_factories.get_receiver.return_value = mock_receiver = asyncmock.AsyncMock()
+        mock_receiver.listen.side_effect = QueueNotFound
+        mock_receiver.new_message.bind.not_async = True
+
+        monkeypatch.setattr(cli, "factory", mock_factories)
+
+        actual = cli.receiver("foo", loop=event_loop)
+
+        assert actual == -2
+        mock_factories.get_receiver.assert_called_with("foo")
+        mock_receiver.listen.assert_called()
+
+    def test_configure(self, monkeypatch, event_loop):
+        mock_factories = asyncmock.Mock()
+        mock_factories.message_sender_factory.available = ["foo"]
+        mock_factories.message_sender_factory.create.return_value = (
+            mock_sender
+        ) = asyncmock.AsyncMock()
+        mock_factories.message_receiver_factory.available = ["bar"]
+        mock_factories.message_receiver_factory.create.return_value = (
+            mock_receiver
+        ) = asyncmock.AsyncMock()
+
+        monkeypatch.setattr(cli, "factory", mock_factories)
+
+        cli.configure(loop=event_loop)
+
+        mock_factories.message_sender_factory.create.assert_called_with("foo")
+        mock_sender.configure.assert_called()
+        mock_factories.message_receiver_factory.create.assert_called_with("bar")
+        mock_receiver.configure.assert_called()
+
+    def test_configure__exception(self, monkeypatch, event_loop):
+        mock_factories = asyncmock.Mock()
+
+        mock_factories.message_sender_factory.available = ["foo"]
+        mock_factories.message_sender_factory.create.return_value = (
+            mock_sender
+        ) = asyncmock.AsyncMock()
+        mock_sender.configure.side_effect = KeyError
+
+        mock_factories.message_receiver_factory.available = ["bar"]
+        mock_factories.message_receiver_factory.create.side_effect = CannotImport
+
+        monkeypatch.setattr(cli, "factory", mock_factories)
+
+        cli.configure(loop=event_loop)
+
+        mock_factories.message_sender_factory.create.assert_called_with("foo")
+        mock_factories.message_receiver_factory.create.assert_called_with("bar")
+        mock_sender.configure.assert_called()
