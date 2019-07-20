@@ -1,4 +1,5 @@
 import abc
+import logging
 
 from typing import Any, Callable, Awaitable, NamedTuple
 from pyapp import events
@@ -8,6 +9,8 @@ from ..serialisation import Serialise, JSONSerialise
 __all__ = ("MessageSender", "MessageReceiver", "Message")
 
 
+logger = logging.getLogger(__name__)
+
 DEFAULT_SERIALISE = JSONSerialise()
 
 
@@ -16,7 +19,7 @@ class Message(NamedTuple):
     Message received
     """
 
-    body: str
+    body: Any
     content_type: str
     content_encoding: str
     queue: Any
@@ -29,7 +32,14 @@ class QueueBase(abc.ABC):
 
     __slots__ = ()
 
-    serialisation: Serialise = DEFAULT_SERIALISE
+    default_serialisation: Serialise = DEFAULT_SERIALISE
+
+    @property
+    def serialisation(self) -> Serialise:
+        """
+        Serialisation
+        """
+        return self.default_serialisation
 
     async def __aenter__(self):
         await self.open()
@@ -99,13 +109,18 @@ class MessageReceiver(QueueBase, metaclass=abc.ABCMeta):
         """
         Called when a message is received.
         """
-        msg = Message(
-            self.serialisation.deserialise(message_body),
-            content_type,
-            content_encoding,
-            self,
-        )
-        await self.new_message(msg)
+        try:
+            body = self.serialisation.deserialise(message_body)
+
+        except ValueError as ex:
+            logger.error("Bad message: unable to de-serialise message: %r", ex)
+
+        except Exception as ex:
+            logger.exception("Un-handling error de-serialising message: %r", ex)
+
+        else:
+            msg = Message(body, content_type, content_encoding, self)
+            await self.new_message(msg)
 
     @abc.abstractmethod
     async def listen(self):
