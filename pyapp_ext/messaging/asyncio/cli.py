@@ -12,18 +12,33 @@ from . import factory, Message
 
 
 async def on_new_message(msg: Message):
-    print(f"From {msg.queue} recieved: {msg.body}")
+    print(f"From {msg.queue} received: {msg.body}")
 
 
 print_err = partial(print, file=sys.stderr)
 
 
 @inject
-def send(data: Any, config_name: str, *, loop: AbstractEventLoop):
+def send(
+    data: Any,
+    config_name: str,
+    *,
+    raw: bool = False,
+    content_type: str = None,
+    content_encoding: str = None,
+    loop: AbstractEventLoop,
+):
     async def _send():
         try:
             async with factory.get_sender(config_name) as queue:
-                await queue.send(data=data)
+                if raw:
+                    await queue.send_raw(
+                        data,
+                        content_type=content_type,
+                        content_encoding=content_encoding,
+                    )
+                else:
+                    await queue.send(**data)
 
         except (NotFound, CannotImport) as ex:
             print_err(str(ex))

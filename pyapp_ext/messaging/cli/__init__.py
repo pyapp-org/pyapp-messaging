@@ -5,7 +5,7 @@ pyApp - Messaging CLI
 import sys
 
 from argparse import FileType
-from pyapp.app import argument, CommandGroup, CommandOptions
+from pyapp.app import argument, CommandGroup, CommandOptions, KeyValueAction
 
 
 class Extension:
@@ -19,19 +19,38 @@ class Extension:
 
         @group.command
         @argument("NAME", help_text="Name of queue from config.")
-        @argument(
-            "--body",
-            type=FileType("r"),
-            default=sys.stdin,
-            help_text="Body of the message; defaults to stdin",
-        )
+        @argument("ARGS", nargs="+", action=KeyValueAction)
         def send(opts: CommandOptions):
             """
             Send a message to a Message Queue
             """
             from ..asyncio.cli import send
 
-            send(opts.body.read(), opts.NAME)
+            send(opts.ARGS, opts.NAME)
+
+        @group.command(name="send-raw")
+        @argument("NAME", help_text="Name of queue from config.")
+        @argument(
+            "--body",
+            type=FileType(),
+            default=sys.stdin,
+            help_text="Body of the message; defaults to stdin",
+        )
+        @argument("--content-type", help_text="Content type of raw data.")
+        @argument("--content-encoding", help_text="Content encoding of raw data.")
+        def send_raw(opts: CommandOptions):
+            """
+            Send a raw message directly from a file.
+            """
+            from ..asyncio.cli import send
+
+            send(
+                opts.body.read(),
+                opts.NAME,
+                raw=True,
+                content_type=opts.content_type,
+                content_encoding=opts.content_encoding,
+            )
 
         @group.command
         @argument("NAME", help_text="Name of queue from config.")
