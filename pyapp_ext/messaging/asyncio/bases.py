@@ -34,19 +34,19 @@ class QueueBase(abc.ABC):
 
     default_serialisation: Serialise = DEFAULT_SERIALISE
 
-    @property
-    def serialisation(self) -> Serialise:
-        """
-        Serialisation
-        """
-        return self.default_serialisation
-
     async def __aenter__(self):
         await self.open()
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.close()
+
+    @property
+    def serialisation(self) -> Serialise:
+        """
+        Serialisation
+        """
+        return self.default_serialisation
 
     async def open(self):
         """
@@ -56,6 +56,11 @@ class QueueBase(abc.ABC):
     async def close(self):
         """
         Close Queue
+        """
+
+    async def configure(self):
+        """
+        Configure/Create message queue
         """
 
 
@@ -84,11 +89,6 @@ class MessageSender(QueueBase, metaclass=abc.ABCMeta):
             content_type=serialisation.content_type,
             content_encoding=serialisation.content_encoding,
         )
-
-    async def configure(self):
-        """
-        Configure/Create message queue
-        """
 
 
 class MessageReceiver(QueueBase, metaclass=abc.ABCMeta):
@@ -121,14 +121,3 @@ class MessageReceiver(QueueBase, metaclass=abc.ABCMeta):
         else:
             msg = Message(body, content_type, content_encoding, self)
             await self.new_message(msg)
-
-    @abc.abstractmethod
-    async def listen(self):
-        """
-        Start listening on the queue for messages
-        """
-
-    async def configure(self):
-        """
-        Configure/Create message queue
-        """

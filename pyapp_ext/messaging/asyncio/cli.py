@@ -1,3 +1,4 @@
+import logging
 import sys
 
 from asyncio import AbstractEventLoop
@@ -10,9 +11,7 @@ from typing import Any
 from pyapp_ext.messaging.exceptions import QueueNotFound
 from . import factory, Message
 
-
-async def on_new_message(msg: Message):
-    print(f"From {msg.queue} received: {msg.body}")
+logger = logging.getLogger(__name__)
 
 
 print_err = partial(print, file=sys.stderr)
@@ -55,23 +54,34 @@ def send(
 
 @inject
 def receiver(config_name: str, *, loop: AbstractEventLoop):
-    async def _receiver():
-        try:
-            async with factory.get_receiver(config_name) as queue:
-                queue.new_message.bind(on_new_message)
-                await queue.listen()
+    async def on_new_message(msg: Message):
+        print(f"From {msg.queue} received: {msg.body}")
 
-        except (NotFound, CannotImport) as ex:
-            print_err(str(ex))
-            return -1
+    try:
+        queue = factory.get_receiver(config_name)
+    except (NotFound, CannotImport) as ex:
+        logger.error(str(ex))
+        return -1
 
-        except QueueNotFound:
-            print_err(f"Queue not found.")
-            return -2
+    queue.new_message.bind(on_new_message)
 
+    logger.info("Starting listener...")
+    try:
+        loop.run_until_complete(queue.open())
+        loop.run_forever()
+
+    except QueueNotFound:
+        logger.error("Queue not found.")
+        return -2
+
+    except (SystemExit, KeyboardInterrupt):
         return 0
 
-    return loop.run_until_complete(_receiver())
+    finally:
+        logger.info("Stopping listener...")
+        loop.run_until_complete(queue.close())
+
+    return 0
 
 
 @inject

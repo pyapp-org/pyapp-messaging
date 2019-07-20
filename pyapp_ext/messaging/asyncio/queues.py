@@ -76,9 +76,6 @@ class CombinedQueue(MessageSender, MessageReceiver):
         """
         await self.new_message(message)
 
-    async def listen(self):
-        await self.receiver.listen()
-
     async def send_raw(
         self, body: bytes, *, content_type: str = None, content_encoding: str = None
     ) -> str:
