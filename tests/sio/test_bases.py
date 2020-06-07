@@ -1,14 +1,14 @@
-from pyapp_ext.messaging import bases
+from pyapp_ext.messaging.sio import bases
 
 
 class QueueBaseTest(bases.QueueBase):
     open_called = False
     close_called = False
 
-    def open(self):
+    def __enter__(self):
         self.open_called = True
 
-    def close(self):
+    def __exit__(self, exc_type, exc_val, exc_tb):
         self.close_called = True
 
 

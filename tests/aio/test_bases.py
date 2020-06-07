@@ -2,7 +2,7 @@ import pytest
 
 from pyapp.events import bind_to
 
-from pyapp_ext.messaging.asyncio import bases
+from pyapp_ext.messaging.aio import bases
 
 
 class QueueTest(bases.MessageSender):
@@ -12,10 +12,10 @@ class QueueTest(bases.MessageSender):
         self.send_raw_calls = []
         self.publish_raw_calls = []
 
-    async def open(self):
+    async def __aenter__(self):
         self.open_called = True
 
-    async def close(self):
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
         self.close_called = True
 
     async def send_raw(
@@ -64,6 +64,12 @@ async def test_message_sender():
 
 
 class MessageReceiverTest(bases.MessageReceiver):
+    async def __aenter__(self):
+        pass
+
+    async def __aexit__(self, exc_type, exc_val, exc_tb):
+        pass
+
     async def listen(self):
         pass  # Do nothing
 

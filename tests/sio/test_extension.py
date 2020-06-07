@@ -1,8 +1,8 @@
 import pytest
 
-from pyapp_ext.messaging.asyncio import Extension
-from pyapp_ext.messaging.asyncio import factory
-from pyapp_ext.messaging.asyncio import bases
+from pyapp_ext.messaging.sio import Extension
+from pyapp_ext.messaging.sio import factory
+from pyapp_ext.messaging.sio import bases
 
 
 class TestExtension:

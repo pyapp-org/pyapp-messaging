@@ -2,4 +2,4 @@ import pytest
 
 from pyapp.conf import settings
 
-from pyapp_ext.messaging.asyncio import factory
+from pyapp_ext.messaging.aio import factory
