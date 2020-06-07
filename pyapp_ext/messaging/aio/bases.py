@@ -138,7 +138,9 @@ class MessageReceiver(QueueBase, metaclass=abc.ABCMeta):
         Delete/Acknowledge message from queue
         """
 
-    async def listen(self, *, auto_delete: bool = True) -> AsyncGenerator[Message, None]:
+    async def listen(
+        self, *, auto_delete: bool = True
+    ) -> AsyncGenerator[Message, None]:
         """
         Listen to queue for messages.
         """
