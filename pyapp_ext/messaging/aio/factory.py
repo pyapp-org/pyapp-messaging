@@ -1,4 +1,4 @@
-from pyapp.conf.helpers import NamedPluginFactory, NoDefault
+from pyapp.conf.helpers.plugins import NamedPluginFactory, NoDefault
 
 from .bases import MessageSender, MessageReceiver
 

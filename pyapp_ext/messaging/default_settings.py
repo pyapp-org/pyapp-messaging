@@ -9,6 +9,10 @@ Example settings::
             "pyapp_ext.aio_pika.queues.MessageSender",
             {"routing_key": "message-queue"},
         ),
+        "sqs": (
+            "pyapp_ext.aiobotocore.queues.SQSSender",
+            {"queue_url": "https://..."}
+        )
     }
     
 """
@@ -24,6 +28,10 @@ Example settings::
             "pyapp_ext.aio_pika.queues.MessageReceiver",
             {"queue_name": "message-queue"},
         ),
+        "sqs": (
+            "pyapp_ext.aiobotocore.queues.SQSReceiver",
+            {"queue_url": "https://..."}
+        )
     }
     
 """

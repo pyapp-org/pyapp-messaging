@@ -1,6 +1,10 @@
+"""
+Special Purpose Queues
+~~~~~~~~~~~~~~~~~~~~~~
+"""
 import asyncio
 
-from typing import Sequence
+from typing import Sequence, AsyncGenerator
 
 from .bases import MessageSender, MessageReceiver, Message
 from .factory import get_sender, get_receiver
@@ -58,23 +62,13 @@ class CombinedQueue(MessageSender, MessageReceiver):
         self.sender = sender
         self.receiver = receiver
 
-        self.receiver.new_message.bind(self.on_new_message)
-
     async def open(self):
-        await self.sender.open()
-        await self.receiver.open()
+        aw = [self.sender.open(), self.receiver.open()]
+        await asyncio.wait(aw)
 
     async def close(self):
-        await self.receiver.close()
-        await self.sender.close()
-
-    async def on_new_message(self, message: Message):
-        """
-        New message received
-
-        This is more to allow child implementations to override this behaviour.
-        """
-        await self.new_message(message)
+        aw = [self.sender.close(), self.receiver.close()]
+        await asyncio.wait(aw)
 
     async def send_raw(
         self, body: bytes, *, content_type: str = None, content_encoding: str = None
@@ -82,3 +76,10 @@ class CombinedQueue(MessageSender, MessageReceiver):
         return await self.sender.send_raw(
             body, content_type=content_type, content_encoding=content_encoding
         )
+
+    async def delete(self, message: Message):
+        await self.receiver.delete(message)
+
+    async def receive_raw(self) -> AsyncGenerator[Message, None]:
+        async for message in self.receiver.receive_raw():
+            yield message

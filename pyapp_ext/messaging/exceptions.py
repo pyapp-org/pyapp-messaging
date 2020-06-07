@@ -1,5 +1,13 @@
-class MessagingError(Exception):
-    pass
+"""
+Messaging Exceptions
+~~~~~~~~~~~~~~~~~~~~
+"""
+
+
+class MessagingError(RuntimeError):
+    """
+    Base messaging exception
+    """
 
 
 class QueueNotFound(MessagingError):
