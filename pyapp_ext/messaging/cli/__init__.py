@@ -8,6 +8,7 @@ Provides a CLI extension for test sending messages
 import logging
 import sys
 from argparse import FileType
+from pprint import pprint
 
 from colorama import Fore
 from pyapp.app import argument, CommandGroup, CommandOptions, KeyValueAction
@@ -99,7 +100,8 @@ class Extension:
         try:
             async with queue:
                 async for msg in queue.listen():
-                    print(f"From {msg.queue} received: {msg.body}", file=opts.out)
+                    print(f"\n----\nFrom: {msg.queue!r}\nContent:", file=opts.out)
+                    pprint(msg.content, stream=opts.out)
 
         except QueueNotFound:
             LOGGER.error("Queue not found.")
