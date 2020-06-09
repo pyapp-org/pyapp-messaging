@@ -23,30 +23,16 @@ Install using *pip* or *pipenv*::
     pipenv install pyapp-Messaging
 
 
-
 Usage
 =====
 
 This library is easiest used with the injection framework eg::
 
     from pyapp.injection import inject, Args
-    from pyapp_ext.messaging import MessageReceiver
+    from pyapp_ext.messaging.aio import MessageReceiver
 
     @inject
     def my_function(queue: MessageReceiver = Args(name="job_queue")):
-        queue.send_message("Do job A")
-
-or using `asyncio`::
-
-    from pyapp.injection import inject, Args
-    from pyapp_ext.messaging.asyncio import MessageSender
-
-    @inject
-    async def my_function(sender: MessageSender = Args(name="job_queue")):
-        await sender.send("Do job A")
-
-
-API
-===
-
+        async for msg in queue.listen():
+            print(msg)
 
