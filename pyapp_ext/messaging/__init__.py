@@ -68,4 +68,3 @@ for fairly complex hybrid queuing models, while combination of AWS SQS and SNS
 can be used to provide a basic hybrid setup.
 
 """
-from .__version__ import __version__
