@@ -1,9 +1,5 @@
 import pytest
 
-from pyapp.events import bind_to
-
-from pyapp_ext.messaging.aio import bases, Message, MessageSender, MessageReceiver
-from pyapp_ext.messaging.aio.bases import QueueBase
 from .mock_bases import MessageSenderTest, MessageReceiverTest
 
 
