@@ -4,6 +4,10 @@ pyApp - Messaging
 
 *Let use handle the boring stuff!*
 
+.. image:: https://github.com/pyapp-org/pyapp-messaging/workflows/Python%20testing/badge.svg
+   :target: https://docs.pyapp.info/
+   :alt: ReadTheDocs
+
 The messaging extension provides an abstract interface to various messaging
 implementations. This lets your application seamlessly migrate from AMQP to SQS
 without any changes to your main application code.
