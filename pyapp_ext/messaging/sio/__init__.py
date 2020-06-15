@@ -1,13 +1,16 @@
 """
-pyApp - Async Messaging
+pyApp - Synchronous Messaging
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Standard messaging interfaces for synchronous messaging clients.
 
 """
-from .bases import *
+from .bases import MessageSender, MessageReceiver, Message
 
 
 class Extension:
     """
-    pyApp - Async Messaging
+    pyApp Synchronous Messaging
     """
 
     default_settings = "pyapp_ext.messaging.default_settings"

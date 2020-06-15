@@ -10,8 +10,17 @@ services:
       - 5672:5672
       - 8080:15672
 
-  elasticmq:
-    image: roribio16/alpine-sqs
+  localstack:
+    image: localstack/localstack-light
     ports:
-      - 9324:9324
-      - 9325:9325
+      - 4566-4599:4566-4599
+      - 8090:8090
+    environment:
+      - SERVICES=sqs,sns
+      - PORT_WEB_UI=8090
+      - DOCKER_HOST=unix:///var/run/docker.sock
+      - HOST_TMP_FOLDER=${TMPDIR}
+    volumes:
+      - "${TMPDIR:-/tmp/localstack}:/tmp/localstack"
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      

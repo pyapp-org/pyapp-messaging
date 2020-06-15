@@ -3,7 +3,7 @@ import pytest
 
 from asyncio import Future
 
-from pyapp_ext.messaging.asyncio import queues
+from pyapp_ext.messaging.aio import queues
 
 
 def mock_get_sender(name: str):
