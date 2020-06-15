@@ -43,6 +43,3 @@ pytest-cov = "^2.10.0"
 "pyapp-messaging.aio" = "pyapp_ext.messaging.aio:Extension"
 "pyapp-messaging.cli" = "pyapp_ext.messaging.cli:Extension"
 "pyapp-messaging.sio" = "pyapp_ext.messaging.sio:Extension"
-
-[tool.pytest]
-addopts = "--cov=pyapp_ext.messaging_aws"
