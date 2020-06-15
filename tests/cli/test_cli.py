@@ -134,68 +134,54 @@ class TestCLI:
         mock_factory.get_sender.assert_called_with("foo")
         mock_sender.send_raw.assert_called_with("eek", content_type=None, content_encoding=None)
 
-    def test_receiver__config_not_found(self, monkeypatch, event_loop):
+    @pytest.mark.asyncio
+    async def test_listen__config_not_found(self, monkeypatch, event_loop):
         mock_factory = mock.Mock(
             get_receiver=mock.Mock(side_effect=NotFound)
         )
         monkeypatch.setattr(cli, "factory", mock_factory)
-        mock_opts = mock.Mock(
-            NAME="foo",
-            out=None,
-        )
+        mock_opts = mock.Mock(NAME="foo", out=None)
 
-        actual = cli.Extension.receiver(mock_opts, loop=event_loop)
+        actual = await cli.Extension.listen(mock_opts)
 
         assert actual == 10
         mock_factory.get_receiver.assert_called_with("foo")
 
-    def test_receiver__queue_not_found(self, monkeypatch, event_loop):
-        mock_open = mock.AsyncMock(side_effect=QueueNotFound)
-        mock_close = mock.AsyncMock()
-
+    @pytest.mark.asyncio
+    async def test_listen__queue_not_found(self, monkeypatch):
+        mock_client = mock.Mock(
+            __aenter__=mock.AsyncMock(side_effect=QueueNotFound),
+            __aexit__=mock.AsyncMock(),
+        )
         mock_factory = mock.Mock(
-            get_receiver=mock.Mock(
-                return_value=mock.Mock(
-                    open=mock_open, close=mock_close
-                )
-            )
+            get_receiver=mock.Mock(return_value=mock_client)
         )
         monkeypatch.setattr(cli, "factory", mock_factory)
-        mock_opts = mock.Mock(
-            NAME="foo",
-            out=None,
-        )
+        mock_opts = mock.Mock(NAME="foo", out=None)
 
-        actual = cli.Extension.receiver(mock_opts, loop=event_loop)
+        actual = await cli.Extension.listen(mock_opts)
 
         assert actual == 20
         mock_factory.get_receiver.assert_called_with("foo")
-        mock_open.assert_awaited()
-        mock_close.assert_awaited()
+        mock_client.__aenter__.assert_awaited()
 
-    def test_receiver__keyboard_exit(self, monkeypatch, event_loop):
-        mock_open = mock.AsyncMock(side_effect=KeyboardInterrupt)
-        mock_close = mock.AsyncMock()
-
+    @pytest.mark.asyncio
+    async def test_listen__keyboard_exit(self, monkeypatch):
+        mock_client = mock.Mock(
+            __aenter__=mock.AsyncMock(side_effect=KeyboardInterrupt),
+            __aexit__=mock.AsyncMock(),
+        )
         mock_factory = mock.Mock(
-            get_receiver=mock.Mock(
-                return_value=mock.Mock(
-                    open=mock_open, close=mock_close
-                )
-            )
+            get_receiver=mock.Mock(return_value=mock_client)
         )
         monkeypatch.setattr(cli, "factory", mock_factory)
-        mock_opts = mock.Mock(
-            NAME="foo",
-            out=None,
-        )
+        mock_opts = mock.Mock(NAME="foo", out=None)
 
-        actual = cli.Extension.receiver(mock_opts, loop=event_loop)
+        actual = await cli.Extension.listen(mock_opts)
 
         assert actual == 0
         mock_factory.get_receiver.assert_called_with("foo")
-        mock_open.assert_awaited()
-        mock_close.assert_awaited()
+        mock_client.__aenter__.assert_awaited()
 
     @pytest.mark.asyncio
     async def test_configure(self, monkeypatch):
@@ -252,4 +238,4 @@ class TestCLI:
         cli.Extension.register_commands(mock_command_group)
 
         mock_command_group.create_command_group.assert_called_with("messaging")
-        assert mock_group.command.call_count == 4
+        assert mock_group.command.call_count == 5

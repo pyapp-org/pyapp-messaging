@@ -100,7 +100,9 @@ class Extension:
         try:
             async with queue:
                 async for msg in queue.listen():
-                    print(f"\n----\nFrom: {msg.queue!r}\nContent:", file=opts.out)
+                    print(
+                        f"\n----\nFrom: {msg.queue!r}\nContent:", file=opts.out
+                    )
                     pprint(msg.content, stream=opts.out)
 
         except QueueNotFound:
@@ -120,7 +122,10 @@ class Extension:
         """
         Configure/Create queues (if possible)
         """
-        factories = [factory.message_sender_factory, factory.message_receiver_factory]
+        factories = [
+            factory.message_sender_factory,
+            factory.message_receiver_factory,
+        ]
 
         for queue_factory in factories:
             print(f"Configuring queues in {queue_factory.setting}")
@@ -152,11 +157,17 @@ class Extension:
         """
         List all available queues
         """
-        factories = [factory.message_sender_factory, factory.message_receiver_factory]
+        factories = [
+            factory.message_sender_factory,
+            factory.message_receiver_factory,
+        ]
 
         for queue_factory in factories:
             print(queue_factory.setting)
-            for name, (type_name, _) in queue_factory._instance_definitions.items():
+            for (
+                name,
+                (type_name, _),
+            ) in queue_factory._instance_definitions.items():
                 print(
                     f" - {Fore.BLUE}{name:20s}{Fore.RESET}"
                     f"{Fore.CYAN}{type_name}{Fore.RESET}"
