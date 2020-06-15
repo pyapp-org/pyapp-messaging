@@ -9,7 +9,7 @@ These interfaces to be used with both Message Queue and Pub/Sub style queues.
 """
 import abc
 import logging
-from typing import Any, Generator, NamedTuple
+from typing import Any, Generator, NamedTuple, Dict, Optional
 
 from ..serialisation import Serialise, JSONSerialise
 
@@ -76,19 +76,22 @@ class MessageSender(QueueBase, metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def send_raw(
-        self, body: bytes, *, content_type: str = None, content_encoding: str = None
-    ) -> str:
+        self, body: str, *, content_type: str = None, content_encoding: str = None
+    ):
         """
         Send a raw message to the task queue. This accepts a prepared and encoded body.
         """
 
-    def send(self, **kwargs: Any) -> str:
+    def send(self, d: Dict[str, Any] = None, **data) -> str:
         """
         Send a message to the task queue.
         """
+        if d:
+            data.update(d)
+
         serialisation = self.serialisation
         return self.send_raw(
-            serialisation.serialise(kwargs),
+            serialisation.serialise(data),
             content_type=serialisation.content_type,
             content_encoding=serialisation.content_encoding,
         )
@@ -101,8 +104,8 @@ class Message(NamedTuple):
 
     body: Any
     content_type: str
-    content_encoding: str
-    raw: Any
+    content_encoding: Optional[str]
+    envelope: Any
     queue: "MessageReceiver"
 
     def delete(self):
@@ -114,7 +117,7 @@ class Message(NamedTuple):
     @property
     def content(self):
         """
-        Deserialised message content
+        De-serialised message content
         """
         return self.queue.serialisation.deserialise(self.body)
 
@@ -138,19 +141,13 @@ class MessageReceiver(QueueBase, metaclass=abc.ABCMeta):
         Delete/Acknowledge message from queue
         """
 
-    def listen(self, *, auto_delete: bool = True) -> Generator[Message, None, None]:
+    def listen(
+        self, *, auto_delete: bool = True
+    ) -> Generator[Message, None, None]:
         """
         Listen to queue for messages.
         """
-        while True:
-            for msg in self.receive_raw():
-                try:
-                    yield msg
-                    if auto_delete:
-                        self.delete(msg)
-
-                except ValueError as ex:
-                    LOGGER.error("Bad message: unable to de-serialise message: %r", ex)
-
-                except Exception:
-                    LOGGER.exception("Un-handling error de-serialising message")
+        for msg in self.receive_raw():
+            yield msg
+            if auto_delete:
+                self.delete(msg)
