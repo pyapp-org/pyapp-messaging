@@ -2,91 +2,106 @@ import pytest
 
 from pyapp.events import bind_to
 
-from pyapp_ext.messaging.aio import bases
+from pyapp_ext.messaging.aio import bases, Message, MessageSender, MessageReceiver
+from pyapp_ext.messaging.aio.bases import QueueBase
+from .mock_bases import MessageSenderTest, MessageReceiverTest
 
 
-class QueueTest(bases.MessageSender):
-    def __init__(self):
-        self.open_called = False
-        self.close_called = False
-        self.send_raw_calls = []
-        self.publish_raw_calls = []
+class TestQueueBase:
+    def test_repr(self):
+        target = MessageSenderTest()
 
-    async def __aenter__(self):
-        self.open_called = True
+        actual = repr(target)
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        self.close_called = True
+        assert actual == "<MessageSenderTest>"
 
-    async def send_raw(
-        self, body: bytes, *, content_type: str = None, content_encoding: str = None
-    ) -> str:
-        self.send_raw_calls.append(
-            (
-                (body,),
-                {"content_type": content_type, "content_encoding": content_encoding},
-            )
-        )
-        return "Woo!"
+    @pytest.mark.asyncio
+    async def test_base_context_manager(self):
+        target = MessageSenderTest()
 
-    async def publish_raw(
-        self, body: bytes, *, content_type: str = None, content_encoding: str = None
-    ):
-        self.publish_raw_calls.append(
-            (
-                (body,),
-                {"content_type": content_type, "content_encoding": content_encoding},
-            )
-        )
+        async with target:
+            assert isinstance(target, MessageSenderTest)
+            assert target.open_called is True
+            assert target.close_called is False
+
+        assert target.close_called is True
 
 
-@pytest.mark.asyncio
-async def test_base_context_manager():
-    async with QueueTest() as target:
-        assert isinstance(target, QueueTest)
-        assert target.open_called is True
-        assert target.close_called is False
+class TestMessageSender:
+    @pytest.mark.asyncio
+    async def test_send(self):
+        target = MessageSenderTest()
 
-    assert target.close_called is True
+        await target.send({"a": "foo"}, b="bar", c=42)
+
+        assert target.send_raw_calls == [(
+            {"a": "foo", "b": "bar", "c": 42},
+            {
+                "content_type": "application/json",
+                "content_encoding": None
+            }
+        )]
+
+    @pytest.mark.asyncio
+    async def test_send__dict_only(self):
+        target = MessageSenderTest()
+
+        await target.send({"a": "foo", "b": "bar", "c": 42})
+
+        assert target.send_raw_calls == [(
+            {"a": "foo", "b": "bar", "c": 42},
+            {
+                "content_type": "application/json",
+                "content_encoding": None
+            }
+        )]
+
+    @pytest.mark.asyncio
+    async def test_send__kwargs_only(self):
+        target = MessageSenderTest()
+
+        await target.send(a="foo", b="bar", c=42)
+
+        assert target.send_raw_calls == [(
+            {"a": "foo", "b": "bar", "c": 42},
+            {
+                "content_type": "application/json",
+                "content_encoding": None
+            }
+        )]
 
 
-@pytest.mark.asyncio
-async def test_message_sender():
-    target = QueueTest()
+class TestMessageReceiver:
+    @pytest.mark.asyncio
+    async def test_receive__auto_delete(self):
+        target = MessageReceiverTest(['{"a":"foo"}', '{"b":"bar","c":42}'])
 
-    await target.send(foo="bar", eek=123)
+        actual = []
+        async for message in target.listen(auto_delete=True):
+            actual.append(message.content)
 
-    assert len(target.send_raw_calls) == 1
-    assert target.send_raw_calls[0] == (
-        ('{"foo": "bar", "eek": 123}',),
-        {"content_type": "application/json", "content_encoding": None},
-    )
+        assert actual == [{"a": "foo"}, {"b": "bar", "c": 42}]
+        assert target.delete_calls == [0, 1]
 
+    @pytest.mark.asyncio
+    async def test_receive(self):
+        target = MessageReceiverTest(['{"a":"foo"}', '{"b":"bar","c":42}'])
 
-class MessageReceiverTest(bases.MessageReceiver):
-    async def __aenter__(self):
-        pass
+        actual = []
+        async for message in target.listen(auto_delete=False):
+            actual.append(message.content)
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        pass
+        assert actual == [{"a": "foo"}, {"b": "bar", "c": 42}]
+        assert target.delete_calls == []
 
-    async def listen(self):
-        pass  # Do nothing
+    @pytest.mark.asyncio
+    async def test_receive__manual_delete(self):
+        target = MessageReceiverTest(['{"a":"foo"}', '{"b":"bar","c":42}'])
 
+        actual = []
+        async for message in target.listen(auto_delete=False):
+            actual.append(message.content)
+            await message.delete()
 
-@pytest.mark.asyncio
-async def test_message_receiver():
-    target = MessageReceiverTest()
-
-    actual = None
-
-    @bind_to(target.new_message)
-    async def callback(msg):
-        nonlocal actual
-        actual = msg
-
-    await target.receive(b'{"foo": "bar"}', content_type="application/json")
-
-    assert isinstance(actual, bases.Message)
-    assert actual.body == {"foo": "bar"}
-    assert actual.content_type == "application/json"
+        assert actual == [{"a": "foo"}, {"b": "bar", "c": 42}]
+        assert target.delete_calls == [0, 1]
