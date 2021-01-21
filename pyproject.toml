@@ -37,7 +37,7 @@ pyapp = "^4.3.0"
 asyncmock = "^0.4"
 pytest = "^6.0.1"
 pytest-asyncio = "^0.14.0"
-pytest-cov = "^2.10.1"
+pytest-cov = "^2.11.1"
 
 [tool.poetry.plugins."pyapp.extensions"]
 "pyapp-messaging.aio" = "pyapp_ext.messaging.aio:Extension"
